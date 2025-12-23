@@ -37,16 +37,23 @@ body,
 }
 
 /* Scrollbar styling for retro feel */
-::-webkit-scrollbar {
+/* 確保所有元素的捲軸都套用復古樣式 */
+*::-webkit-scrollbar {
     width: 12px;
 }
 
-::-webkit-scrollbar-track {
+*::-webkit-scrollbar-track {
     background: #fdf6e3;
     border-left: 4px solid #000;
 }
 
-::-webkit-scrollbar-thumb {
+*::-webkit-scrollbar-thumb {
     background: #fbbf24;
     border: 2px solid #000;
+}
+
+/* 修正 Firefox 的捲軸樣式 */
+* {
+    scrollbar-width: thin;
+    scrollbar-color: #fbbf24 #fdf6e3;
 }

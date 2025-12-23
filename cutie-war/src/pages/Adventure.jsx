@@ -425,8 +425,7 @@ function CharacterSprite({ char, isActor }) {
                     isActor && "scale-110 drop-shadow-md"
                 )}
                 animate={{
-                    x: isAttack ? (char.isEnemy ? -50 : 50) : 0,
-                    x: isHit ? [0, -5, 5, -5, 5, 0] : 0, // Shake
+                    x: isHit ? [0, -5, 5, -5, 5, 0] : (isAttack ? (char.isEnemy ? -50 : 50) : 0),
                     filter: isHit ? "brightness(2) sepia(1) hue-rotate(-50deg) saturate(5)" : "none" // Flash Red-ish
                 }}
                 transition={{ duration: 0.3 }}

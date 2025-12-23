@@ -27,6 +27,15 @@ body {
     color: #000;
 }
 
+html,
+body,
+#root {
+    height: 100%;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+}
+
 /* Scrollbar styling for retro feel */
 ::-webkit-scrollbar {
     width: 12px;

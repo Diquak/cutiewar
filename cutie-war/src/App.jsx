@@ -11,9 +11,9 @@ function App() {
     const [page, setPage] = useState('home');
 
     return (
-        <div className="min-h-screen bg-[#fdf6e3] text-gray-800">
+        <div className="h-screen w-screen overflow-hidden bg-[#fdf6e3] text-gray-800">
             {/* Page Content */}
-            <main className="w-full max-w-md mx-auto min-h-screen bg-opacity-50 relative">
+            <main className="w-full max-w-md mx-auto h-full bg-opacity-50 relative">
                 {page === 'home' && <Home navigate={setPage} />}
                 {page === 'team' && <Team />}
                 {page === 'gacha' && <Gacha />}

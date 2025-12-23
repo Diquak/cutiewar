@@ -3,6 +3,8 @@ import { useGameStore } from '../store/useGameStore';
 import { CHARACTERS } from '../data/characters';
 import { Swords, Star } from 'lucide-react';
 
+import Particles from '../components/Particles';
+
 export default function Home({ navigate }) {
     const { coins, unlockedCharacters, currentChapterId, isGameCleared } = useGameStore();
 
@@ -10,7 +12,10 @@ export default function Home({ navigate }) {
     const leader = CHARACTERS[leaderId];
 
     return (
-        <div className="flex flex-col items-center p-6 space-y-8 pt-12 min-h-full bg-[url('/images/bg_home.png')] bg-cover bg-center">
+        <div className="flex flex-col items-center p-6 space-y-8 pt-12 min-h-full bg-[url('/images/bg_home.png')] bg-cover bg-center relative">
+            {/* 放在最上面，作為背景特效 */}
+            <Particles />
+
             {/* Header */}
             <h1 className="text-xl font-black text-amber-800 tracking-wider text-center leading-relaxed">CUTIE WAR<br /><span className="text-sm">萌寵大戰甜點怪</span></h1>
 
@@ -40,7 +45,7 @@ export default function Home({ navigate }) {
             {/* Big Adventure Button */}
             <button
                 onClick={() => navigate('adventure')}
-                className="w-full max-w-xs bg-red-500 hover:bg-red-600 text-white text-sm font-bold py-6 px-4 rounded-none border-4 border-black shadow-pixel active:shadow-none active:translate-y-1 active:translate-x-1 transition-all flex items-center justify-center gap-2"
+                className="w-full max-w-xs bg-red-500 hover:bg-red-600 text-white text-sm font-bold py-6 px-4 rounded-none btn-pixel flex items-center justify-center gap-2"
             >
                 <Swords size={24} />
                 {isGameCleared ? "自由對戰 (Free)" : `第 ${currentChapterId} 章：冒險開始`}

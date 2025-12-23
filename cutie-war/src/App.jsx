@@ -10,9 +10,11 @@ import clsx from 'clsx';
 
 function App() {
     const [page, setPage] = useState('home');
+    const [hideNavbar, setHideNavbar] = useState(false);
 
-    // 判斷是否為冒險模式
+    // 判斷是否隱藏導航列
     const isAdventure = page === 'adventure';
+    const shouldHideNavbar = isAdventure || hideNavbar;
 
     return (
         // 全局背景：深灰色，用來襯托遊戲視窗，確保置中
@@ -31,12 +33,12 @@ function App() {
                     {page === 'team' && <Team />}
                     {page === 'gacha' && <Gacha />}
                     {page === 'about' && <About />}
-                    {page === 'chat' && <Chat />}
+                    {page === 'chat' && <Chat onChatRoomChange={setHideNavbar} />}
                     {page === 'adventure' && <Adventure onBack={() => setPage('home')} />}
                 </main>
 
                 {/* 導覽列：固定在遊戲視窗內部的下方 */}
-                {!isAdventure && (
+                {!shouldHideNavbar && (
                     <div className="absolute bottom-0 left-0 w-full z-50 pointer-events-none flex justify-center pb-8">
                         <div className="pointer-events-auto">
                             <Navbar currentParams={page} navigate={setPage} />

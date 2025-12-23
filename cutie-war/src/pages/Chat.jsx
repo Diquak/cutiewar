@@ -3,12 +3,22 @@ import { useGameStore } from '../store/useGameStore';
 import { CHARACTERS } from '../data/characters';
 import { ArrowLeft, Send } from 'lucide-react';
 
-export default function Chat() {
+export default function Chat({ onChatRoomChange }) {
     const { unlockedCharacters, chatHistory, saveChat } = useGameStore();
     const [selectedCharId, setSelectedCharId] = useState(null);
 
+    const handleSelectChar = (id) => {
+        setSelectedCharId(id);
+        onChatRoomChange?.(true); // 進入聊天室，隱藏導航列
+    };
+
+    const handleBack = () => {
+        setSelectedCharId(null);
+        onChatRoomChange?.(false); // 離開聊天室，顯示導航列
+    };
+
     if (selectedCharId) {
-        return <ChatRoom charId={selectedCharId} onBack={() => setSelectedCharId(null)} />;
+        return <ChatRoom charId={selectedCharId} onBack={handleBack} />;
     }
 
     return (
@@ -26,7 +36,7 @@ export default function Chat() {
                     return (
                         <button
                             key={id}
-                            onClick={() => setSelectedCharId(id)}
+                            onClick={() => handleSelectChar(id)}
                             className="flex items-center gap-4 bg-white p-3 border-4 border-black shadow-pixel hover:translate-y-1 hover:shadow-none transition-all text-left w-full"
                         >
                             <img src={char.image} className="w-12 h-12 object-contain pixel-art bg-amber-50 border-2 border-black shrink-0" />

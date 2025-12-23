@@ -86,7 +86,7 @@ export default function Adventure({ onBack }) {
                         unlockCharacter('amao');
                     } else if (activeScript.chapterId === 2) {
                         // 第2章通關：其他夥伴全部加入 (為了第3章打魔王)
-                        ['frogs', 'atu', 'daifuku', 'mochi'].forEach(id => unlockCharacter(id));
+                        ['atu', 'daifuku', 'mochi'].forEach(id => unlockCharacter(id));
                     }
                     // 注意：advanceChapter() 移到 complete 畫面的按鈕
                 }
@@ -148,7 +148,7 @@ export default function Adventure({ onBack }) {
                     <div className="absolute bottom-32 left-1/2 -translate-x-1/2 z-10">
                         <img
                             src={speakerImg}
-                            className="w-48 h-48 object-contain pixel-art drop-shadow-[0_0_10px_rgba(255,255,255,0.5)] animate-bounce-hover"
+                            className="w-64 h-64 object-contain pixel-art drop-shadow-[0_0_10px_rgba(255,255,255,0.5)] animate-bounce-hover"
                         />
                     </div>
                 )}
@@ -447,7 +447,7 @@ function CharacterSprite({ char, isActor, small }) {
     const isHit = char.status === 'hit';
     // Adjust attack direction based on side
     const moveX = char.isEnemy ? -50 : (small ? 30 : 50);
-    const sizeClass = small ? "w-14 h-14" : "w-24 h-24";
+    const sizeClass = small ? "w-20 h-20" : "w-32 h-32";
 
     return (
         <div className="relative">

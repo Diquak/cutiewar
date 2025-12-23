@@ -6,7 +6,7 @@ export const useGameStore = create(
     persist(
         (set, get) => ({
             // === State ===
-            unlockedCharacters: ['buibui'], // Override: Only buibui initially
+            unlockedCharacters: ['buibui', 'frogs'], // 初始：肥肥 + 鼻屎&腳皮
             coins: 200, // 初始給 200 讓玩家可以抽 2 次
             currentChapterId: 1,
             isGameCleared: false,
@@ -45,7 +45,7 @@ export const useGameStore = create(
 
             // Admin/Debug
             resetProgress: () => set({
-                unlockedCharacters: ['buibui'],
+                unlockedCharacters: ['buibui', 'frogs'],
                 coins: 200,
                 currentChapterId: 1,
                 isGameCleared: false,

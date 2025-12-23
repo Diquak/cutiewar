@@ -1,60 +1,68 @@
 export const FULL_STORY_SCRIPT = [
     {
         chapterId: 1,
-        title: "第一章：午睡危機",
-        background: "/images/bg_garden.png",
+        title: "第一章：甜點的逆襲",
+        background: "/images/bg_garden.png", // 確保你有這張圖，沒有的話換成 bg_home.png
         introDialogue: [
-            { speaker: "肥肥 Buibui", text: "嚼嚼... 今天的葵花子特別香... ❤️", mood: "happy" },
-            { speaker: "野生布丁怪", text: "ㄉㄨㄞ！(一口吞掉葵花子)", mood: "attack" },
-            { speaker: "腳皮 Kaphue", text: "嗶——！！(痛死啦！誰踩在老子背上！)", mood: "angry" },
-            { speaker: "鼻屎 Pesai", text: "蛤。(眼神示意：處理掉它)", mood: "neutral" },
-            { speaker: "肥肥 Buibui", text: "把我的點心還來！萌寵守衛隊，出擊！", mood: "determined" }
+            { speaker: "系統", text: "這是一個甜點變成怪物，試圖統治世界的時代..." },
+            { speaker: "肥肥", text: "嚼嚼... 我的葵花子好像變少了？" },
+            { speaker: "系統", text: "突然，一隻巨大的布丁擋住了去路！" },
+            { speaker: "貪吃布丁怪", text: "噗喲噗喲！把你們的點心都交出來！" },
+            { speaker: "肥肥", text: "吱？！那是我的點心！絕對不能原諒！" }
         ],
-        battle: { enemyId: "pudding", enemyName: "貪吃布丁怪", hp: 60 },
+        // ★ 關鍵：這裡的 enemyId 必須對應 characters.js 裡的 key (pudding)
+        battle: {
+            enemyId: "pudding",
+            enemyName: "貪吃布丁怪",
+            hp: 60
+        },
         outroDialogue: [
-            { speaker: "肥肥 Buibui", text: "哼，知道厲害了吧。咦？那邊草叢在晃？", mood: "alert" },
-            { speaker: "大福 Daifuku", text: "啾啾！救命呀～阿毛被黏住了！", mood: "worry" }
+            { speaker: "貪吃布丁怪", text: "嗚嗚... 被吃掉了..." },
+            { speaker: "肥肥", text: "嚼嚼... 這個布丁雖然兇，但味道不錯。" },
+            { speaker: "系統", text: "戰鬥勝利！獲得了通往下一關的鑰匙。" }
         ]
     },
     {
         chapterId: 2,
-        title: "第二章：黏黏迷宮",
-        background: "/images/bg_bush.png",
+        title: "第二章：珍珠的彈雨",
+        background: "/images/bg_bush.png", // 確保有圖，或換成 bg_home.png
         introDialogue: [
-            { speaker: "阿毛 A-Mao", text: "放開我！我不是奇異果！我是鳥！", mood: "panic" },
-            { speaker: "麻糬 Mochi", text: "我...我的堅果存糧...都被封住了...", mood: "crying" },
-            { speaker: "珍珠射手", text: "啵啵啵！(無情地發射珍珠)", mood: "attack" },
-            { speaker: "阿土 A-Tu", text: "不行...土太硬了，我挖不動...嘿嘿...", mood: "dizzy" },
-            { speaker: "肥肥 Buibui", text: "欺負我的朋友？腳皮，上去擋住珍珠！", mood: "command" },
-            { speaker: "腳皮 Kaphue", text: "嗶！？(又是我？我恨這個團隊...)", mood: "shock" }
+            { speaker: "系統", text: "擊敗布丁後，肥肥繼續前進。" },
+            { speaker: "阿毛", text: "等等！前面好像有什麼圓圓的東西飛過來了！" },
+            { speaker: "阿毛", text: "我不是奇異果！不要射我！" },
+            { speaker: "珍珠射手", text: "啵啵啵！黑糖珍珠加農砲，發射！" }
         ],
-        battle: { enemyId: "boba", enemyName: "珍珠射手", hp: 130 },
+        // ★ 關鍵：這裡對應 boba
+        battle: {
+            enemyId: "boba",
+            enemyName: "珍珠射手",
+            hp: 130
+        },
         outroDialogue: [
-            { speaker: "大福 Daifuku", text: "啾啾♪ (唱出治癒的歌聲，幫大家恢復體力)", mood: "happy" },
-            { speaker: "阿土 A-Tu", text: "謝謝你們... 我聞到了，魔王就在那個野餐籃裡！", mood: "serious" },
-            { speaker: "麻糬 Mochi", text: "那...那我們也一起去！為了保護堅果！", mood: "determined" },
-            { speaker: "系統", text: "阿毛、阿土、大福、麻糬 加入了隊伍！" }
+            { speaker: "珍珠射手", text: "啵... 我的Q度... 消失了..." },
+            { speaker: "阿毛", text: "呼... 嚇死我了，還以為要變成果汁了。" }
         ]
     },
     {
         chapterId: 3,
-        title: "最終章：決戰野餐籃",
-        background: "/images/bg_basket.png",
+        title: "第三章：魔王的真面目",
+        background: "/images/bg_basket.png", // 確保有圖，或換成 bg_home.png
         introDialogue: [
-            { speaker: "米苔目大魔王", text: "呼嚕嚕... 竟敢闖入我的勾芡領域...", mood: "evil" },
-            { speaker: "腳皮 Kaphue", text: "嗶！！(噁心死了！這傢伙全身都是麵條！)", mood: "scared" },
-            { speaker: "阿毛 A-Mao", text: "大家小心！他的觸手很快！(發抖)", mood: "panic" },
-            { speaker: "肥肥 Buibui", text: "這是最後一戰了！為了花園的和平，還有好吃的午睡！", mood: "brave" },
-            { speaker: "鼻屎 Pesai", text: "蛤！(發出進攻信號)", mood: "shout" },
-            { speaker: "全體", text: "Cutie War 守衛隊，全軍突擊！！", mood: "battle_cry" }
+            { speaker: "系統", text: "終於來到了甜點城堡的深處。" },
+            { speaker: "米苔目大魔王", text: "愚蠢的寵物們，竟敢來到這裡。" },
+            { speaker: "米苔目大魔王", text: "感受澱粉的恐懼吧！" },
+            { speaker: "肥肥", text: "不管你是什麼，只要能吃就沒問題！大家上啊！" }
         ],
-        battle: { enemyId: "miku", enemyName: "米苔目大魔王", hp: 400 },
+        // ★ 關鍵：這裡對應 miku
+        battle: {
+            enemyId: "miku",
+            enemyName: "米苔目大魔王",
+            hp: 400
+        },
         outroDialogue: [
-            { speaker: "米苔目大魔王", text: "可惡... 竟然輸給了這些小動物...", mood: "dead" },
-            { speaker: "系統", text: "魔法解除，甜點怪變回了普通的美味點心。", mood: "narrator" },
-            { speaker: "肥肥 Buibui", text: "我要開動了！(大吃)", mood: "happy" },
-            { speaker: "旁白", text: "就這樣，肥肥和鼻屎在天上守護著大家，腳皮繼續在地上氣噗噗地生活。這就是最棒的結局。", mood: "peace" },
-            { speaker: "結局畫面", text: "[顯示全體大合照：肥肥鼻屎有光環，大家靠在一起睡覺]", visual: "ending_cg" }
+            { speaker: "米苔目大魔王", text: "不可能... 我竟然... 輸了..." },
+            { speaker: "系統", text: "世界恢復了和平，而肥肥的肚子也更圓了。" },
+            { speaker: "系統", text: "感謝遊玩 Cutie War！" }
         ]
     }
 ];

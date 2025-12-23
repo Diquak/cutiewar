@@ -6,10 +6,11 @@ export default function Team() {
     const { unlockedCharacters } = useGameStore();
 
     return (
-        <div className="p-6 pb-24 space-y-6">
+        <div className="p-6 space-y-6 w-full max-w-2xl mx-auto">
             <h2 className="text-xl font-bold text-amber-800 border-b-4 border-black inline-block pb-2">我的隊伍</h2>
 
-            <div className="grid grid-cols-1 md://grid-cols-2 gap-6">
+            {/* ★ 修正：原本這裡寫錯成 md://grid-cols-2，已修正為 md:grid-cols-2 */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {Object.values(CHARACTERS).map((char) => {
                     const isUnlocked = unlockedCharacters.includes(char.id);
 

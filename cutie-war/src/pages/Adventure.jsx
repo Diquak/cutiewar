@@ -79,10 +79,11 @@ export default function Adventure({ onBack }) {
     };
 
     if (!activeScript && mode !== 'menu') {
-        return <div className="h-full flex items-center justify-center font-pixel text-white">Loading...</div>;
+        return <div className="h-full flex items-center justify-center font-pixel text-white bg-black">Loading... (Script: {activeScript ? 'Yes' : 'No'}, Mode: {mode})</div>;
     }
 
     if (mode === 'menu') {
+        // ... (keep existing menu code)
         return (
             <div className="h-full flex flex-col items-center justify-center space-y-8 p-6 bg-[url('/images/bg_home.png')] bg-cover">
                 <div className="bg-white/90 p-8 border-4 border-black shadow-pixel text-center space-y-4">
@@ -105,10 +106,15 @@ export default function Adventure({ onBack }) {
 
         // Safety check
         if (!currentLine) {
-            // Should not happen, but if empty dialogue list:
-            if (mode === 'intro') setMode('battle');
-            else setMode('complete');
-            return null;
+            return (
+                <div className="flex flex-col items-center justify-center h-full bg-red-800 text-white p-4">
+                    <h2 className="text-xl font-bold mb-2">Error: Missing Dialogue</h2>
+                    <p>Mode: {mode}</p>
+                    <p>Index: {dialogueIndex}</p>
+                    <p>Total: {dialogueList?.length || 0}</p>
+                    <button onClick={() => setMode('battle')} className="mt-4 bg-white text-black px-4 py-2">Skip to Battle</button>
+                </div>
+            );
         }
 
         return (
@@ -118,10 +124,6 @@ export default function Adventure({ onBack }) {
             >
                 {/* Background */}
                 <img src={activeScript.background} className="absolute inset-0 w-full h-full object-cover opacity-80" />
-
-                {/* Character Speaker Image (If exists in CHARACTERS or ENEMIES) */}
-                {/* Trying to match speaker name to ID is hard. We can map some known ones or just hide image if not found */}
-                {/* For simplicity in VN, we rely on the Dialogue Box mainly, unless speaker is '肥肥 Buibui' which maps to 'buibui' */}
 
                 {/* Dialogue Box */}
                 <div className="absolute bottom-4 left-4 right-4 z-20">
@@ -164,7 +166,7 @@ export default function Adventure({ onBack }) {
         )
     }
 
-    return null;
+    return <div className="bg-red-500 text-white p-10">Error: Unknown Mode ({mode})</div>;
 }
 
 // === Battle Component ===

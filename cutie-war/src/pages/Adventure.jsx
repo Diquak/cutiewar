@@ -21,16 +21,23 @@ export default function Adventure({ onBack }) {
 
     // Initialize Script based on Chapter
     useEffect(() => {
+        console.log("Adventure: Effect triggered", { currentChapterId, isGameCleared });
         if (!isGameCleared) {
+            console.log("Adventure: Searching for script...", FULL_STORY_SCRIPT);
             const script = FULL_STORY_SCRIPT.find(s => s.chapterId === currentChapterId);
             if (script) {
+                console.log("Adventure: Script found", script);
                 setActiveScript(script);
                 setMode('intro');
             } else {
-                console.error("Chapter not found!");
+                console.error("Adventure: Chapter not found! ID:", currentChapterId);
             }
+        } else {
+            console.log("Adventure: Game cleared");
         }
     }, [currentChapterId, isGameCleared]);
+
+    console.log("Adventure: Render", { mode, activeScript, currentChapterId });
 
     // === Handlers ===
 

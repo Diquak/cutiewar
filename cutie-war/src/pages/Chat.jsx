@@ -94,9 +94,9 @@ function ChatRoom({ charId, onBack }) {
     };
 
     return (
-        <div className="flex flex-col h-[calc(100vh-80px)] bg-[#fdf6e3]">
+        <div className="flex flex-col h-full bg-[#fdf6e3]">
             {/* Header */}
-            <div className="bg-white p-4 border-b-4 border-black flex items-center gap-4 z-10 sticky top-0 shadow-sm">
+            <div className="bg-white p-6 border-b-4 border-black flex items-center gap-6 z-10 sticky top-0 shadow-sm shrink-0">
                 <button onClick={onBack} className="p-2 border-2 border-black hover:bg-gray-100 active:translate-y-1"><ArrowLeft size={16} /></button>
                 <div className="flex items-center gap-2">
                     <img src={char.image} className="w-8 h-8 pixel-art bg-amber-100 border border-black" />
@@ -105,13 +105,13 @@ function ChatRoom({ charId, onBack }) {
             </div>
 
             {/* Messages */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-4" ref={scrollRef}>
+            <div className="flex-1 overflow-y-auto p-4 space-y-4 pb-24" ref={scrollRef}>
                 {history.map((msg, i) => (
                     <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                         {msg.role !== 'user' && <img src={char.image} className="w-8 h-8 border border-black bg-amber-100 mr-2 self-end pixel-art" />}
                         <div className={`max-w-[85%] p-3 text-xs leading-relaxed border-2 border-black shadow-[2px_2px_0_0_#000] ${msg.role === 'user'
-                                ? 'bg-green-400 text-black'
-                                : 'bg-white text-gray-800'
+                            ? 'bg-green-400 text-black'
+                            : 'bg-white text-gray-800'
                             }`}>
                             {msg.content}
                         </div>

@@ -15,37 +15,35 @@ function App() {
     const isAdventure = page === 'adventure';
 
     return (
-        // 外層容器：鎖定視窗高度為 100dvh (解決手機網址列問題)
-        <div className={clsx(
-            "h-[100dvh] w-screen overflow-hidden text-gray-800 transition-colors duration-500 relative flex flex-col",
-            isAdventure ? "bg-black" : "bg-[#fdf6e3]"
-        )}>
+        // 全局背景：深灰色，用來襯托遊戲視窗，確保置中
+        <div className="min-h-screen w-full bg-gray-900 flex items-center justify-center p-4 font-pixel overflow-hidden">
 
-            {/* 內容區：設定為 flex-1 讓它佔滿剩餘空間，並允許 overflow-y-auto (內部滾動) */}
-            <main className={clsx(
-                "flex-1 w-full overflow-x-hidden overflow-y-auto relative transition-all duration-500",
-                // 如果有導覽列，底部要留白 (pb-24)，不然最後的內容會被擋住
-                !isAdventure ? "pb-24" : "pb-0"
+            {/* 遊戲主視窗：保持 1440x1024 比例 (約 1.4:1)，但自動縮放以適應螢幕 */}
+            {/* aspect-[1440/1024] 確保比例不變，max-h-[95vh] 確保不超過螢幕高度 */}
+            <div className={clsx(
+                "relative w-full max-w-[1440px] aspect-[1440/1024] max-h-[95vh] shrink-0 overflow-hidden shadow-2xl transition-colors duration-500 flex flex-col border-8 border-black",
+                isAdventure ? "bg-black" : "bg-[#fdf6e3]"
             )}>
-                <div className="max-w-md mx-auto min-h-full">
+
+                {/* 內容區：佔滿剩餘空間 (扣除下方導覽列) */}
+                <main className="flex-1 w-full h-full relative overflow-hidden">
                     {page === 'home' && <Home navigate={setPage} />}
                     {page === 'team' && <Team />}
                     {page === 'gacha' && <Gacha />}
                     {page === 'about' && <About />}
                     {page === 'chat' && <Chat />}
                     {page === 'adventure' && <Adventure onBack={() => setPage('home')} />}
-                </div>
-            </main>
+                </main>
 
-            {/* 導覽列：固定在最下方 (Fixed) */}
-            {!isAdventure && (
-                <div className="fixed bottom-0 left-0 w-full z-50 pointer-events-none flex justify-center pb-6">
-                    {/* 這裡加 pointer-events-auto 讓按鈕可以點，但旁邊透明處可以穿透 */}
-                    <div className="pointer-events-auto">
-                        <Navbar currentParams={page} navigate={setPage} />
+                {/* 導覽列：固定在遊戲視窗內部的下方 */}
+                {!isAdventure && (
+                    <div className="absolute bottom-0 left-0 w-full z-50 pointer-events-none flex justify-center pb-8">
+                        <div className="pointer-events-auto scale-125 origin-bottom">
+                            <Navbar currentParams={page} navigate={setPage} />
+                        </div>
                     </div>
-                </div>
-            )}
+                )}
+            </div>
         </div>
     );
 }

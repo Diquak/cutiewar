@@ -31,8 +31,14 @@ export default function Adventure({ onBack }) {
                 setMode('intro');
             } else {
                 console.error("Adventure: Chapter not found! ID:", currentChapterId);
-                // Fallback to menu if chapter missing
-                setMode('menu');
+                // Fallback: If chapter not found, start Ch1 or random battle to prevent black screen
+                const fallbackScript = FULL_STORY_SCRIPT[0];
+                if (fallbackScript) {
+                    setActiveScript(fallbackScript);
+                    setMode('intro');
+                } else {
+                    setMode('menu');
+                }
             }
         }
     }, [currentChapterId, isGameCleared]);

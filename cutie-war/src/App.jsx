@@ -34,9 +34,9 @@ function App() {
                 {page === 'adventure' && <Adventure onBack={() => setPage('home')} />}
             </main>
 
-            {/* 導覽列：只有不在冒險模式時才顯示，並固定在底部 */}
+            {/* 導覽列：使用 fixed bottom-0 強制固定在螢幕下方 */}
             {!isAdventure && (
-                <div className="fixed bottom-0 w-full flex justify-center pb-4 pointer-events-none">
+                <div className="fixed bottom-0 left-0 w-full flex justify-center pb-4 pointer-events-none z-50">
                     <div className="pointer-events-auto shadow-2xl">
                         <Navbar currentParams={page} navigate={setPage} />
                     </div>

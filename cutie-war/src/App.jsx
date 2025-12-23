@@ -11,19 +11,21 @@ import clsx from 'clsx';
 function App() {
     const [page, setPage] = useState('home');
 
-    // Check if current page is adventure
+    // 判斷是否為冒險模式 (用於切換背景底色，讓切換更自然)
     const isAdventure = page === 'adventure';
 
     return (
+        // 外層容器：永遠佔滿螢幕 (w-screen, h-screen)
         <div className={clsx(
             "h-screen w-screen overflow-hidden text-gray-800 transition-colors duration-500",
             isAdventure ? "bg-black" : "bg-[#fdf6e3]"
         )}>
-            {/* Page Content */}
-            <main className={clsx(
-                "h-full relative mx-auto transition-all duration-500 ease-in-out",
-                isAdventure ? "w-full max-w-none" : "w-full max-w-md bg-opacity-50"
-            )}>
+            {/* 內容區：
+                ★ 移除了 max-w-md (手機寬度限制)
+                ★ 設定為 w-full h-full (全螢幕)
+                ★ 頁面內容會自動居中 (因為各頁面如 Home.jsx 都有 flex items-center)
+            */}
+            <main className="w-full h-full relative mx-auto transition-all duration-500 ease-in-out">
                 {page === 'home' && <Home navigate={setPage} />}
                 {page === 'team' && <Team />}
                 {page === 'gacha' && <Gacha />}
@@ -32,8 +34,14 @@ function App() {
                 {page === 'adventure' && <Adventure onBack={() => setPage('home')} />}
             </main>
 
-            {/* Navigation - Hidden in Adventure Mode */}
-            {!isAdventure && <Navbar currentParams={page} navigate={setPage} />}
+            {/* 導覽列：只有不在冒險模式時才顯示，並固定在底部 */}
+            {!isAdventure && (
+                <div className="fixed bottom-0 w-full flex justify-center pb-4 pointer-events-none">
+                    <div className="pointer-events-auto shadow-2xl">
+                        <Navbar currentParams={page} navigate={setPage} />
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

@@ -186,10 +186,20 @@ export default function Adventure({ onBack }) {
     }
 
     if (mode === 'battle') {
+        // Safety: Ensure valid unlocked characters passed to battle
+        const battleSquad = (unlockedCharacters && unlockedCharacters.length > 0)
+            ? unlockedCharacters
+            : ['buibui'];
+
+        if (!activeScript?.battle) {
+            console.error("Adventure: Missing battle config");
+            return <div className="p-4 text-white bg-red-800 font-pixel">Error: Battle Configuration Missing</div>;
+        }
+
         return (
             <BattleScene
                 enemyConfig={activeScript.battle}
-                unlockedCharacters={unlockedCharacters}
+                unlockedCharacters={battleSquad}
                 onWin={() => setMode('outro')}
                 onLose={() => { alert("戰鬥失敗！"); onBack(); }}
                 onRun={onBack}
@@ -220,8 +230,13 @@ function BattleScene({ enemyConfig, unlockedCharacters, onWin, onLose, onRun }) 
     const [currentTurnIdx, setCurrentTurnIdx] = useState(0);
     const [logs, setLogs] = useState([]);
     const [animating, setAnimating] = useState(false);
+    const [isInitialized, setIsInitialized] = useState(false);
+
+    const addLog = (msg) => setLogs(prev => [msg, ...prev].slice(0, 3));
 
     useEffect(() => {
+        if (!enemyConfig) return;
+
         const initialCombatants = {};
         // Add Player Team
         unlockedCharacters.forEach(id => {
@@ -265,13 +280,17 @@ function BattleScene({ enemyConfig, unlockedCharacters, onWin, onLose, onRun }) 
             .sort((a, b) => b.spd - a.spd)
             .map(c => c.id);
         setTurnOrder(order);
-        addLog("戰鬥開始！");
-    }, []);
+        setLogs(["戰鬥開始！"]);
+        setIsInitialized(true);
+    }, [enemyConfig, unlockedCharacters]);
 
-    const addLog = (msg) => setLogs(prev => [msg, ...prev].slice(0, 3));
+    // Error check (after all hooks)
+    if (!enemyConfig) {
+        return <div className="text-red-500 font-bold p-4">Error: Missing Enemy Config</div>;
+    }
 
-    // Safety Loading Check
-    if (turnOrder.length === 0 || !combatants[turnOrder[0]]) {
+    // Loading check (after all hooks)
+    if (!isInitialized || turnOrder.length === 0) {
         return <div className="h-full flex items-center justify-center text-white font-pixel animate-pulse">Loading Battle...</div>;
     }
 

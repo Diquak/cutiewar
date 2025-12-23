@@ -11,36 +11,37 @@ import clsx from 'clsx';
 function App() {
     const [page, setPage] = useState('home');
 
-    // 判斷是否為冒險模式 (用於切換背景底色，讓切換更自然)
+    // 判斷是否為冒險模式
     const isAdventure = page === 'adventure';
 
     return (
+        // 外層容器：鎖定視窗高度為 100dvh (解決手機網址列問題)
         <div className={clsx(
-            // ★ 修改 1: 使用 h-[100dvh] 解決手機網址列擋住的問題
-            // ★ 修改 2: 保持 overflow-hidden 鎖住外層，讓裡面自己滾動
-            "h-[100dvh] w-screen overflow-hidden text-gray-800 transition-colors duration-500 relative",
+            "h-[100dvh] w-screen overflow-hidden text-gray-800 transition-colors duration-500 relative flex flex-col",
             isAdventure ? "bg-black" : "bg-[#fdf6e3]"
         )}>
-            {/* 內容區： */}
+
+            {/* 內容區：設定為 flex-1 讓它佔滿剩餘空間，並允許 overflow-y-auto (內部滾動) */}
             <main className={clsx(
-                // ★ 關鍵修正：加入 overflow-y-auto 讓這一區可以垂直捲動！
-                // ★ pb-24 是為了避免內容被下方的導覽列擋住
-                "w-full h-full relative mx-auto transition-all duration-500 ease-in-out overflow-x-hidden overflow-y-auto",
-                !isAdventure && "pb-24" // 只有非冒險模式才需要底部留白
+                "flex-1 w-full overflow-x-hidden overflow-y-auto relative transition-all duration-500",
+                // 如果有導覽列，底部要留白 (pb-24)，不然最後的內容會被擋住
+                !isAdventure ? "pb-24" : "pb-0"
             )}>
-                {page === 'home' && <Home navigate={setPage} />}
-                {page === 'team' && <Team />}
-                {page === 'gacha' && <Gacha />}
-                {page === 'about' && <About />}
-                {page === 'chat' && <Chat />}
-                {page === 'adventure' && <Adventure onBack={() => setPage('home')} />}
+                <div className="max-w-md mx-auto min-h-full">
+                    {page === 'home' && <Home navigate={setPage} />}
+                    {page === 'team' && <Team />}
+                    {page === 'gacha' && <Gacha />}
+                    {page === 'about' && <About />}
+                    {page === 'chat' && <Chat />}
+                    {page === 'adventure' && <Adventure onBack={() => setPage('home')} />}
+                </div>
             </main>
 
-            {/* 導覽列：懸浮固定在最下方 */}
+            {/* 導覽列：固定在最下方 (Fixed) */}
             {!isAdventure && (
-                <div className="fixed bottom-0 left-0 w-full flex justify-center pb-6 pointer-events-none z-50">
-                    {/* pointer-events-auto 確保按鈕可以被點擊 */}
-                    <div className="pointer-events-auto shadow-2xl">
+                <div className="fixed bottom-0 left-0 w-full z-50 pointer-events-none flex justify-center pb-6">
+                    {/* 這裡加 pointer-events-auto 讓按鈕可以點，但旁邊透明處可以穿透 */}
+                    <div className="pointer-events-auto">
                         <Navbar currentParams={page} navigate={setPage} />
                     </div>
                 </div>

@@ -105,7 +105,7 @@ function ChatRoom({ charId, onBack }) {
             </div>
 
             {/* Messages */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-4 pb-24" ref={scrollRef}>
+            <div className="flex-1 overflow-y-auto p-4 space-y-4 pb-40" ref={scrollRef}>
                 {history.map((msg, i) => (
                     <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                         {msg.role !== 'user' && <img src={char.image} className="w-8 h-8 border border-black bg-amber-100 mr-2 self-end pixel-art" />}
@@ -130,9 +130,9 @@ function ChatRoom({ charId, onBack }) {
                 )}
             </div>
 
-            {/* Input */}
-            <div className="p-4 bg-white border-t-4 border-black">
-                <div className="flex gap-2">
+            {/* Input - Fixed above navbar (bottom-20 = navbar height) */}
+            <div className="fixed bottom-20 left-0 right-0 p-4 bg-white border-t-4 border-black z-20">
+                <div className="flex gap-2 max-w-screen-lg mx-auto">
                     <input
                         value={input}
                         onChange={e => setInput(e.target.value)}

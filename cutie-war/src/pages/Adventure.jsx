@@ -14,9 +14,6 @@ export default function Adventure({ onBack }) {
     const [activeScript, setActiveScript] = useState(null);
     const [dialogueIndex, setDialogueIndex] = useState(0);
 
-    // Battle State
-    const [logs, setLogs] = useState([]);
-
     // Initialize Script based on Chapter
     useEffect(() => {
         // Safety: Ensure at least one character is unlocked
@@ -75,25 +72,21 @@ export default function Adventure({ onBack }) {
         } else {
             // Dialogue End
             if (mode === 'intro') {
-                // Critical Fix: Ensure player has at least one character before battle
                 if (unlockedCharacters.length === 0) {
                     console.warn("Adventure: Empty team detected before battle, auto-unlocking Buibui");
                     unlockCharacter('buibui');
-                    // We need to wait for store update? 
-                    // store updates are sync usually in zustand but components re-render async.
-                    // However, BattleScene uses the prop passed down.
-                    // The prop 'unlockedCharacters' here is from the render closure.
-                    // We might need to manually inject 'buibui' into the prop for the next render or ensure re-render happens.
-                    // Actually, setting state 'mode' triggers re-render, 
-                    // and useGameStore hook will provide updated unlockedCharacters.
                 }
                 setMode('battle');
             } else {
                 // Outro End -> Chapter Logic
                 if (!isGameCleared) {
-                    // Unlock Logic based on Chapter
-                    if (activeScript.chapterId === 2) {
-                        ['frogs', 'amao', 'atu', 'daifuku', 'mochi'].forEach(id => unlockCharacter(id));
+                    // ★ 分章節解鎖角色
+                    if (activeScript.chapterId === 1) {
+                        // 第1章通關：阿毛加入 (為了第2章做準備)
+                        unlockCharacter('amao');
+                    } else if (activeScript.chapterId === 2) {
+                        // 第2章通關：其他夥伴全部加入 (為了第3章打魔王)
+                        ['frogs', 'atu', 'daifuku', 'mochi'].forEach(id => unlockCharacter(id));
                     }
                     advanceChapter();
                 }
@@ -105,15 +98,13 @@ export default function Adventure({ onBack }) {
 
     // Helper to find character image for dialogue
     const getSpeakerImage = (speakerName) => {
-        // Check Player Characters
         const charKey = Object.keys(CHARACTERS).find(k => speakerName.includes(CHARACTERS[k].name) || CHARACTERS[k].name.includes(speakerName.split(' ')[0]));
         if (charKey) return CHARACTERS[charKey].image;
 
-        // Check Enemies
         const enemyKey = Object.keys(ENEMIES).find(k => speakerName.includes(ENEMIES[k].name));
         if (enemyKey) return ENEMIES[enemyKey].image;
 
-        return null; // Unknown speaker (Narrator/System)
+        return null;
     };
 
     if (!activeScript && mode !== 'menu') {
@@ -152,7 +143,7 @@ export default function Adventure({ onBack }) {
             >
                 <img src={activeScript.background} className="absolute inset-0 w-full h-full object-cover opacity-60" />
 
-                {/* Speaker Image - Centered/Bottom */}
+                {/* Speaker Image */}
                 {speakerImg && (
                     <div className="absolute bottom-32 left-1/2 -translate-x-1/2 z-10">
                         <img
@@ -165,7 +156,6 @@ export default function Adventure({ onBack }) {
                 {/* Dialogue Box */}
                 <div className="absolute bottom-4 left-4 right-4 z-20">
                     <div className="bg-white border-4 border-black p-6 shadow-pixel min-h-[160px] animate-bounce-in relative">
-                        {/* Back Button during Story */}
                         <button onClick={(e) => { e.stopPropagation(); onBack(); }} className="absolute -top-4 -right-2 bg-gray-200 text-xs px-2 py-1 border-2 border-black">
                             Exit
                         </button>
@@ -186,7 +176,6 @@ export default function Adventure({ onBack }) {
     }
 
     if (mode === 'battle') {
-        // Safety: Ensure valid unlocked characters passed to battle
         const battleSquad = (unlockedCharacters && unlockedCharacters.length > 0)
             ? unlockedCharacters
             : ['buibui'];
@@ -225,6 +214,7 @@ export default function Adventure({ onBack }) {
 // === Battle Component ===
 
 function BattleScene({ enemyConfig, unlockedCharacters, onWin, onLose, onRun }) {
+    // 1. All Hook Definitions (Must be at the top, unconditional)
     const [combatants, setCombatants] = useState({});
     const [turnOrder, setTurnOrder] = useState([]);
     const [currentTurnIdx, setCurrentTurnIdx] = useState(0);
@@ -234,6 +224,41 @@ function BattleScene({ enemyConfig, unlockedCharacters, onWin, onLose, onRun }) 
 
     const addLog = (msg) => setLogs(prev => [msg, ...prev].slice(0, 3));
 
+    // 2. Helper Functions (Defined before they are used in Effects)
+    const nextTurn = () => {
+        setCombatants(currentCombatants => {
+            const enemy = currentCombatants['enemy'];
+            const players = Object.values(currentCombatants).filter(c => !c.isEnemy && c.hp > 0);
+
+            if (!enemy || enemy.hp <= 0) { setTimeout(onWin, 1000); return currentCombatants; }
+            if (players.length === 0) { setTimeout(onLose, 1000); return currentCombatants; }
+
+            return currentCombatants;
+        });
+        setCurrentTurnIdx(prev => (prev + 1) % (turnOrder.length || 1));
+        setAnimating(false);
+    };
+
+    const executeAttack = (attacker, target) => {
+        setCombatants(prev => ({ ...prev, [attacker.id]: { ...prev[attacker.id], status: 'attack' } }));
+        setTimeout(() => {
+            const dmg = Math.max(1, Math.floor((attacker.atk - target.def * 0.2) * (Math.random() * 0.2 + 0.9)));
+            addLog(`${attacker.name} 攻擊了 ${target.name}，造成 ${dmg} 點傷害！`);
+            setCombatants(prev => ({
+                ...prev,
+                [attacker.id]: { ...prev[attacker.id], status: 'idle' },
+                [target.id]: { ...prev[target.id], hp: Math.max(0, prev[target.id].hp - dmg), status: 'hit', popup: dmg }
+            }));
+            setTimeout(() => {
+                setCombatants(prev => ({ ...prev, [target.id]: { ...prev[target.id], status: 'idle', popup: null } }));
+                nextTurn();
+            }, 800);
+        }, 500);
+    };
+
+    // 3. Effects (Init and Loop)
+
+    // Initialization Effect
     useEffect(() => {
         if (!enemyConfig) return;
 
@@ -241,7 +266,7 @@ function BattleScene({ enemyConfig, unlockedCharacters, onWin, onLose, onRun }) 
         // Add Player Team
         unlockedCharacters.forEach(id => {
             const char = CHARACTERS[id];
-            if (char) { // Safety check
+            if (char) {
                 initialCombatants[id] = {
                     id,
                     name: char.name,
@@ -259,7 +284,7 @@ function BattleScene({ enemyConfig, unlockedCharacters, onWin, onLose, onRun }) 
 
         // Add Enemy
         const enemyBase = ENEMIES[enemyConfig.enemyId];
-        if (enemyBase) { // Safety check
+        if (enemyBase) {
             initialCombatants['enemy'] = {
                 id: 'enemy',
                 name: enemyConfig.enemyName,
@@ -284,19 +309,9 @@ function BattleScene({ enemyConfig, unlockedCharacters, onWin, onLose, onRun }) 
         setIsInitialized(true);
     }, [enemyConfig, unlockedCharacters]);
 
-    // Error check (after all hooks)
-    if (!enemyConfig) {
-        return <div className="text-red-500 font-bold p-4">Error: Missing Enemy Config</div>;
-    }
-
-    // Loading check (after all hooks)
-    if (!isInitialized || turnOrder.length === 0) {
-        return <div className="h-full flex items-center justify-center text-white font-pixel animate-pulse">Loading Battle...</div>;
-    }
-
-    // Turn Loop
+    // Turn Loop Effect
     useEffect(() => {
-        if (turnOrder.length === 0 || animating) return;
+        if (!isInitialized || turnOrder.length === 0 || animating) return;
         const currentId = turnOrder[currentTurnIdx];
         const actor = combatants[currentId];
 
@@ -314,36 +329,9 @@ function BattleScene({ enemyConfig, unlockedCharacters, onWin, onLose, onRun }) 
                 executeAttack(actor, target);
             }, 1000);
         }
-    }, [currentTurnIdx, animating, combatants, turnOrder]);
+    }, [currentTurnIdx, animating, combatants, turnOrder, isInitialized]);
 
-    const nextTurn = () => {
-        const enemy = combatants['enemy'];
-        const players = Object.values(combatants).filter(c => !c.isEnemy && c.hp > 0);
-
-        if (!enemy || enemy.hp <= 0) { setTimeout(onWin, 1000); return; }
-        if (players.length === 0) { setTimeout(onLose, 1000); return; }
-
-        setCurrentTurnIdx(prev => (prev + 1) % turnOrder.length);
-        setAnimating(false);
-    };
-
-    const executeAttack = (attacker, target) => {
-        setCombatants(prev => ({ ...prev, [attacker.id]: { ...prev[attacker.id], status: 'attack' } }));
-        setTimeout(() => {
-            const dmg = Math.max(1, Math.floor((attacker.atk - target.def * 0.2) * (Math.random() * 0.2 + 0.9)));
-            addLog(`${attacker.name} 攻擊了 ${target.name}，造成 ${dmg} 點傷害！`);
-            setCombatants(prev => ({
-                ...prev,
-                [attacker.id]: { ...prev[attacker.id], status: 'idle' },
-                [target.id]: { ...prev[target.id], hp: Math.max(0, prev[target.id].hp - dmg), status: 'hit', popup: dmg }
-            }));
-            setTimeout(() => {
-                setCombatants(prev => ({ ...prev, [target.id]: { ...prev[target.id], status: 'idle', popup: null } }));
-                nextTurn();
-            }, 800);
-        }, 500);
-    };
-
+    // 4. Handlers (Player Action)
     const handlePlayerAction = (type) => {
         setAnimating(true);
         const attackerId = turnOrder[currentTurnIdx];
@@ -376,9 +364,21 @@ function BattleScene({ enemyConfig, unlockedCharacters, onWin, onLose, onRun }) 
         }
     };
 
+    // 5. Conditional Returns (Must be LAST, after all hooks and handler definitions)
+
+    // Error check
+    if (!enemyConfig) {
+        return <div className="text-red-500 font-bold p-4">Error: Missing Enemy Config</div>;
+    }
+
+    // Loading check
+    if (!isInitialized || turnOrder.length === 0) {
+        return <div className="h-full flex items-center justify-center text-white font-pixel animate-pulse">Loading Battle...</div>;
+    }
+
+    // Render Logic
     const currentActorId = turnOrder[currentTurnIdx];
     const currentActor = combatants[currentActorId];
-    // Safety check for undefined currentActor
     const isPlayerTurn = currentActor && !currentActor.isEnemy && !animating;
 
     return (
@@ -395,7 +395,6 @@ function BattleScene({ enemyConfig, unlockedCharacters, onWin, onLose, onRun }) 
 
             {/* Battle Area (Horizontal) */}
             <div className="flex-1 flex items-end justify-between px-8 pb-32 relative">
-
                 {/* Players (Left) */}
                 <div className="flex flex-col-reverse gap-4 items-center mb-8">
                     {Object.values(combatants).filter(c => !c.isEnemy).map(c => (
@@ -425,7 +424,6 @@ function BattleScene({ enemyConfig, unlockedCharacters, onWin, onLose, onRun }) 
                     <button onClick={() => handlePlayerAction('heal')} className="bg-blue-500 text-white border-4 border-black font-bold flex items-center justify-center gap-2 hover:bg-blue-600 active:scale-95">
                         <Zap /> 技能
                     </button>
-                    {/* Safety check for name display */}
                     {combatants[currentActorId] && (
                         <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-yellow-400 px-4 py-1 border-2 border-black text-xs font-bold shadow-pixel">
                             輪到 {combatants[currentActorId].name} 行動

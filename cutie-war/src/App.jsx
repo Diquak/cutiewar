@@ -38,7 +38,7 @@ function App() {
                 {/* 導覽列：固定在遊戲視窗內部的下方 */}
                 {!isAdventure && (
                     <div className="absolute bottom-0 left-0 w-full z-50 pointer-events-none flex justify-center pb-8">
-                        <div className="pointer-events-auto scale-125 origin-bottom">
+                        <div className="pointer-events-auto">
                             <Navbar currentParams={page} navigate={setPage} />
                         </div>
                     </div>

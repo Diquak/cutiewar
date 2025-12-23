@@ -7,9 +7,10 @@
 /* 定義中文像素字體 */
 @font-face {
     font-family: 'PixelTw';
-    /* 取個新名字 */
-    src: url('/fonts/pixel_tw.ttf') format('truetype');
-    /* 指向新的中文型字體 */
+    src: url('/fonts/pixel_tw.ttf') format('truetype'),
+        url('fonts/pixel_tw.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
     font-display: swap;
 }
 

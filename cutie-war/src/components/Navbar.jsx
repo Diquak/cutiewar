@@ -40,7 +40,7 @@ export default function Navbar({ currentParams, navigate }) {
     // I'll go with Bottom Navigation for Team/Chat/Gacha/About/Home.
 
     return (
-        <nav className="fixed bottom-0 w-full bg-white border-t-4 border-black p-2 flex justify-around items-center z-50 pb-safe">
+        <nav className="bg-white border-4 border-black shadow-[4px_4px_0_0_#000] p-3 flex gap-8 items-center rounded-sm">
             <NavBtn id="home" icon={Home} label="首頁" active={currentParams === 'home'} onClick={() => navigate('home')} />
             <NavBtn id="team" icon={Users} label="隊伍" active={currentParams === 'team'} onClick={() => navigate('team')} />
             <NavBtn id="chat" icon={MessageCircle} label="聊天" active={currentParams === 'chat'} onClick={() => navigate('chat')} />
@@ -55,12 +55,17 @@ function NavBtn({ id, icon: Icon, label, active, onClick }) {
         <button
             onClick={onClick}
             className={clsx(
-                "flex flex-col items-center p-2 transition-all active:scale-95 active:translate-y-1",
-                active ? "text-amber-600 scale-110" : "text-gray-400 hover:text-amber-500"
+                "flex flex-col items-center px-4 py-2 transition-all duration-75 relative group",
+                active ? "-translate-y-1" : "hover:-translate-y-1"
             )}
         >
-            <Icon size={20} className={active ? "fill-current" : ""} />
-            <span className="text-[10px] mt-1 font-bold">{label}</span>
+            <div className={clsx(
+                "absolute inset-0 bg-yellow-300 border-2 border-black -z-10 transition-opacity",
+                active ? "opacity-100 shadow-[2px_2px_0_0_#000]" : "opacity-0 group-hover:opacity-100 group-hover:shadow-[2px_2px_0_0_#000]"
+            )} />
+
+            <Icon size={24} className={clsx("transition-transform mb-1", active ? "text-amber-900" : "text-gray-700")} />
+            <span className={clsx("text-xs font-bold", active ? "text-amber-900" : "text-gray-700")}>{label}</span>
         </button>
     )
 }

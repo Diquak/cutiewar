@@ -7,8 +7,8 @@ export default {
     theme: {
         extend: {
             fontFamily: {
-                'pixel': ['"PixelFont"', '"Press Start 2P"', 'cursive'],
-                'sans': ['"PixelFont"', 'system-ui', 'sans-serif'],
+                'pixel': ['"PixelTw"', '"Press Start 2P"', 'cursive'],
+                'sans': ['"PixelTw"', 'system-ui', 'sans-serif'],
             },
             boxShadow: {
                 'pixel': '4px 4px 0 0 #000',

@@ -10,7 +10,7 @@ export default function Home({ navigate }) {
     const leader = CHARACTERS[leaderId];
 
     return (
-        <div className="flex flex-col items-center p-6 space-y-8 pt-12 pb-24 h-full bg-[url('/images/bg_home.png')] bg-cover bg-center">
+        <div className="flex flex-col items-center p-6 space-y-8 pt-12 min-h-full bg-[url('/images/bg_home.png')] bg-cover bg-center">
             {/* Header */}
             <h1 className="text-xl font-black text-amber-800 tracking-wider text-center leading-relaxed">CUTIE WAR<br /><span className="text-sm">萌寵大戰甜點怪</span></h1>
 

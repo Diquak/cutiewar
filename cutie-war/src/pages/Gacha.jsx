@@ -4,9 +4,10 @@ import { CHARACTERS } from '../data/characters';
 import { Gift, Sparkles } from 'lucide-react';
 
 export default function Gacha() {
-    const { coins, addCoins, unlockCharacter } = useGameStore();
+    const { coins, addCoins, unlockCharacter, unlockedCharacters } = useGameStore();
     const [isPulling, setIsPulling] = useState(false);
     const [result, setResult] = useState(null);
+    const [isDupe, setIsDupe] = useState(false);
 
     const COST = 100;
 
@@ -17,14 +18,17 @@ export default function Gacha() {
         }
 
         setIsPulling(true);
+        setResult(null);
         addCoins(-COST);
 
         setTimeout(() => {
             const charIds = Object.keys(CHARACTERS);
             const randomId = charIds[Math.floor(Math.random() * charIds.length)];
+            const wasDupe = unlockedCharacters.includes(randomId);
 
             unlockCharacter(randomId);
             setResult(CHARACTERS[randomId]);
+            setIsDupe(wasDupe);
             setIsPulling(false);
         }, 1500);
     };
@@ -46,9 +50,12 @@ export default function Gacha() {
 
             {result && !isPulling && (
                 <div className="bg-white p-6 border-4 border-black shadow-pixel-lg flex flex-col items-center animate-bounce">
-                    <h3 className="text-lg font-bold text-amber-600 mb-2">獲得！</h3>
+                    <h3 className={`text-lg font-bold mb-2 ${isDupe ? 'text-green-600' : 'text-amber-600'}`}>
+                        {isDupe ? '重複！+100 🪙' : '獲得新夥伴！'}
+                    </h3>
                     <img src={result.image} className="w-32 h-32 object-contain pixel-art mb-4" />
                     <p className="text-xl font-black text-gray-800">{result.name}</p>
+                    {isDupe && <p className="text-xs text-gray-500 mt-1">已轉換為金幣</p>}
                 </div>
             )}
 

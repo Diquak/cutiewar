@@ -7,7 +7,7 @@ import clsx from 'clsx';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export default function Adventure({ onBack }) {
-    const { currentChapterId, unlockedCharacters, isGameCleared, advanceChapter, unlockCharacter } = useGameStore();
+    const { currentChapterId, unlockedCharacters, isGameCleared, advanceChapter, unlockCharacter, addCoins } = useGameStore();
 
     // === State ===
     const [mode, setMode] = useState(isGameCleared ? 'menu' : 'intro');
@@ -88,7 +88,7 @@ export default function Adventure({ onBack }) {
                         // 第2章通關：其他夥伴全部加入 (為了第3章打魔王)
                         ['frogs', 'atu', 'daifuku', 'mochi'].forEach(id => unlockCharacter(id));
                     }
-                    advanceChapter();
+                    // 注意：advanceChapter() 移到 complete 畫面的按鈕
                 }
                 setMode('complete');
             }
@@ -189,7 +189,7 @@ export default function Adventure({ onBack }) {
             <BattleScene
                 enemyConfig={activeScript.battle}
                 unlockedCharacters={battleSquad}
-                onWin={() => setMode('outro')}
+                onWin={() => { addCoins(50); setMode('outro'); }}
                 onLose={() => { alert("戰鬥失敗！"); onBack(); }}
                 onRun={onBack}
             />
@@ -201,7 +201,7 @@ export default function Adventure({ onBack }) {
             <div className="h-full flex flex-col items-center justify-center bg-yellow-50 space-y-6 p-6 from-yellow-100 to-white bg-gradient-to-b">
                 <h2 className="text-2xl font-black text-yellow-600">CHAPTER CLEAR!</h2>
                 <div className="text-6xl animate-bounce">⭐</div>
-                <button onClick={onBack} className="bg-amber-500 text-black border-4 border-black px-8 py-3 font-bold shadow-pixel hover:bg-amber-600 active:translate-y-1 active:shadow-none transition-none">
+                <button onClick={() => { if (!isGameCleared) advanceChapter(); onBack(); }} className="bg-amber-500 text-black border-4 border-black px-8 py-3 font-bold shadow-pixel hover:bg-amber-600 active:translate-y-1 active:shadow-none transition-none">
                     回到首頁
                 </button>
             </div>
@@ -394,13 +394,13 @@ function BattleScene({ enemyConfig, unlockedCharacters, onWin, onLose, onRun }) 
             </div>
 
             {/* Battle Area (Horizontal) */}
-            <div className="flex-1 flex items-end justify-between px-8 pb-32 relative">
-                {/* Players (Left) */}
-                <div className="flex flex-col-reverse gap-4 items-center mb-8">
+            <div className="flex-1 flex items-center justify-between px-4 pb-28 relative">
+                {/* Players (Left) - 3x2 Grid */}
+                <div className="grid grid-cols-3 gap-2 items-end">
                     {Object.values(combatants).filter(c => !c.isEnemy).map(c => (
                         <div key={c.id} className={clsx("relative flex flex-col items-center transition-all", c.hp <= 0 && "opacity-50 grayscale")}>
-                            {c.id === currentActorId && <div className="absolute -top-6 text-yellow-400 animate-bounce">▼</div>}
-                            <CharacterSprite char={c} isActor={c.id === currentActorId} />
+                            {c.id === currentActorId && <div className="absolute -top-4 text-yellow-400 animate-bounce text-xs">▼</div>}
+                            <CharacterSprite char={c} isActor={c.id === currentActorId} small />
                             <HealthBar current={c.hp} max={c.maxHp} compressed />
                         </div>
                     ))}
@@ -442,17 +442,18 @@ function BattleScene({ enemyConfig, unlockedCharacters, onWin, onLose, onRun }) 
 }
 
 // ... (CharacterSprite and HealthBar remain slightly same, maybe adjust X translate for horizontal)
-function CharacterSprite({ char, isActor }) {
+function CharacterSprite({ char, isActor, small }) {
     const isAttack = char.status === 'attack';
     const isHit = char.status === 'hit';
     // Adjust attack direction based on side
-    const moveX = char.isEnemy ? -50 : 50;
+    const moveX = char.isEnemy ? -50 : (small ? 30 : 50);
+    const sizeClass = small ? "w-14 h-14" : "w-24 h-24";
 
     return (
         <div className="relative">
             <motion.img
                 src={char.image}
-                className={clsx("w-24 h-24 object-contain pixel-art", isActor && "scale-110 drop-shadow-md")}
+                className={clsx(sizeClass, "object-contain pixel-art", isActor && "scale-110 drop-shadow-md")}
                 animate={{
                     x: isHit ? [0, -5, 5, -5, 5, 0] : (isAttack ? moveX : 0),
                     filter: isHit ? "brightness(2) sepia(1) hue-rotate(-50deg) saturate(5)" : "none"
@@ -461,7 +462,7 @@ function CharacterSprite({ char, isActor }) {
             />
             <AnimatePresence>
                 {char.popup && (
-                    <motion.div initial={{ y: 0, opacity: 1 }} animate={{ y: -30, opacity: 0 }} className={clsx("absolute -top-10 left-1/2 -translate-x-1/2 text-2xl font-black drop-shadow-md", char.popup.toString().includes('+') ? "text-green-500" : "text-red-500")}>
+                    <motion.div initial={{ y: 0, opacity: 1 }} animate={{ y: -30, opacity: 0 }} className={clsx("absolute -top-10 left-1/2 -translate-x-1/2 font-black drop-shadow-md", small ? "text-lg" : "text-2xl", char.popup.toString().includes('+') ? "text-green-500" : "text-red-500")}>
                         {char.popup}
                     </motion.div>
                 )}

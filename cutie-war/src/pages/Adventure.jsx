@@ -71,6 +71,10 @@ export default function Adventure({ onBack }) {
         }
     };
 
+    if (!activeScript && mode !== 'menu') {
+        return <div className="h-full flex items-center justify-center font-pixel text-white">Loading...</div>;
+    }
+
     if (mode === 'menu') {
         return (
             <div className="h-full flex flex-col items-center justify-center space-y-8 p-6 bg-[url('/images/bg_home.png')] bg-cover">

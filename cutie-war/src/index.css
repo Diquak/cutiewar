@@ -1,0 +1,32 @@
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer utilities {
+    .pixel-art {
+        image-rendering: pixelated;
+    }
+}
+
+body {
+    font-family: 'Press Start 2P', cursive;
+    background-color: #fdf6e3;
+    color: #000;
+}
+
+/* Scrollbar styling for retro feel */
+::-webkit-scrollbar {
+    width: 12px;
+}
+
+::-webkit-scrollbar-track {
+    background: #fdf6e3;
+    border-left: 4px solid #000;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #fbbf24;
+    border: 2px solid #000;
+}

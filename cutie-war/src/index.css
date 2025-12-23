@@ -4,6 +4,17 @@
 @tailwind components;
 @tailwind utilities;
 
+@font-face {
+    font-family: 'PixelFont';
+    src: url('/fonts/pixel.ttf') format('truetype');
+}
+
+@layer base {
+    html {
+        font-family: 'PixelFont', 'Press Start 2P', system-ui, sans-serif;
+    }
+}
+
 @layer utilities {
     .pixel-art {
         image-rendering: pixelated;

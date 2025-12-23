@@ -19,6 +19,12 @@ export default function Adventure({ onBack }) {
 
     // Initialize Script based on Chapter
     useEffect(() => {
+        // Safety: Ensure at least one character is unlocked
+        if (!unlockedCharacters || unlockedCharacters.length === 0) {
+            console.warn("Adventure: No characters found, unlocking Buibui");
+            unlockCharacter('buibui');
+        }
+
         // Recover missing characters if in Chapter 3+
         if (currentChapterId >= 3 && unlockedCharacters.length === 1) {
             ['frogs', 'amao', 'atu', 'daifuku', 'mochi'].forEach(id => unlockCharacter(id));
@@ -41,7 +47,7 @@ export default function Adventure({ onBack }) {
                 }
             }
         }
-    }, [currentChapterId, isGameCleared]);
+    }, [currentChapterId, isGameCleared, unlockedCharacters]);
 
     // === Handlers ===
 
@@ -69,6 +75,18 @@ export default function Adventure({ onBack }) {
         } else {
             // Dialogue End
             if (mode === 'intro') {
+                // Critical Fix: Ensure player has at least one character before battle
+                if (unlockedCharacters.length === 0) {
+                    console.warn("Adventure: Empty team detected before battle, auto-unlocking Buibui");
+                    unlockCharacter('buibui');
+                    // We need to wait for store update? 
+                    // store updates are sync usually in zustand but components re-render async.
+                    // However, BattleScene uses the prop passed down.
+                    // The prop 'unlockedCharacters' here is from the render closure.
+                    // We might need to manually inject 'buibui' into the prop for the next render or ensure re-render happens.
+                    // Actually, setting state 'mode' triggers re-render, 
+                    // and useGameStore hook will provide updated unlockedCharacters.
+                }
                 setMode('battle');
             } else {
                 // Outro End -> Chapter Logic

@@ -1,7 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useGameStore } from '../store/useGameStore';
-import { FULL_STORY_SCRIPT, ENEMIES } from '../data/story'; // Wait, ENEMIES are in characters.js in my thought but I put them in data/characters.js? Let me check characters.js content.
-// I put ENEMIES in characters.js export.
 import { CHARACTERS, ENEMIES } from '../data/characters';
 import { FULL_STORY_SCRIPT } from '../data/story';
 import { ArrowLeft, Sword, Zap, Heart } from 'lucide-react';

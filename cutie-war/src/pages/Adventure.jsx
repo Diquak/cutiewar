@@ -7,42 +7,39 @@ import clsx from 'clsx';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export default function Adventure({ onBack }) {
-    const { currentChapterId, unlockedCharacters, isGameCleared, advanceChapter } = useGameStore();
+    const { currentChapterId, unlockedCharacters, isGameCleared, advanceChapter, unlockCharacter } = useGameStore();
 
     // === State ===
-    // Mode: 'menu' (Free Mode only), 'intro', 'battle', 'outro', 'complete'
     const [mode, setMode] = useState(isGameCleared ? 'menu' : 'intro');
     const [activeScript, setActiveScript] = useState(null);
     const [dialogueIndex, setDialogueIndex] = useState(0);
 
     // Battle State
-    const [battleState, setBattleState] = useState(null);
     const [logs, setLogs] = useState([]);
 
     // Initialize Script based on Chapter
     useEffect(() => {
-        console.log("Adventure: Effect triggered", { currentChapterId, isGameCleared });
+        // Recover missing characters if in Chapter 3+
+        if (currentChapterId >= 3 && unlockedCharacters.length === 1) {
+            ['frogs', 'amao', 'atu', 'daifuku', 'mochi'].forEach(id => unlockCharacter(id));
+        }
+
         if (!isGameCleared) {
-            console.log("Adventure: Searching for script...", FULL_STORY_SCRIPT);
             const script = FULL_STORY_SCRIPT.find(s => s.chapterId === currentChapterId);
             if (script) {
-                console.log("Adventure: Script found", script);
                 setActiveScript(script);
                 setMode('intro');
             } else {
                 console.error("Adventure: Chapter not found! ID:", currentChapterId);
+                // Fallback to menu if chapter missing
+                setMode('menu');
             }
-        } else {
-            console.log("Adventure: Game cleared");
         }
     }, [currentChapterId, isGameCleared]);
-
-    console.log("Adventure: Render", { mode, activeScript, currentChapterId });
 
     // === Handlers ===
 
     const startFreeBattle = () => {
-        // Random Enemy
         const enemyKeys = Object.keys(ENEMIES);
         const randomKey = enemyKeys[Math.floor(Math.random() * enemyKeys.length)];
         const enemy = ENEMIES[randomKey];
@@ -51,7 +48,7 @@ export default function Adventure({ onBack }) {
             title: "自由對戰",
             background: "/images/bg_garden.png",
             introDialogue: [],
-            battle: { enemyId: randomKey, enemyName: enemy.name, hp: enemy.hp * 1.5 }, // Buffer HP for fun
+            battle: { enemyId: randomKey, enemyName: enemy.name, hp: enemy.hp * 1.5 },
             outroDialogue: [{ speaker: "系統", text: "戰鬥勝利！獲得 50 金幣。" }]
         });
         setMode('battle');
@@ -68,9 +65,13 @@ export default function Adventure({ onBack }) {
             if (mode === 'intro') {
                 setMode('battle');
             } else {
-                // Outro End -> Complete
+                // Outro End -> Chapter Logic
                 if (!isGameCleared) {
-                    advanceChapter(); // This might trigger re-render and useEffect logic for next chapter
+                    // Unlock Logic based on Chapter
+                    if (activeScript.chapterId === 2) {
+                        ['frogs', 'amao', 'atu', 'daifuku', 'mochi'].forEach(id => unlockCharacter(id));
+                    }
+                    advanceChapter();
                 }
                 setMode('complete');
             }
@@ -78,14 +79,26 @@ export default function Adventure({ onBack }) {
         }
     };
 
+    // Helper to find character image for dialogue
+    const getSpeakerImage = (speakerName) => {
+        // Check Player Characters
+        const charKey = Object.keys(CHARACTERS).find(k => speakerName.includes(CHARACTERS[k].name) || CHARACTERS[k].name.includes(speakerName.split(' ')[0]));
+        if (charKey) return CHARACTERS[charKey].image;
+
+        // Check Enemies
+        const enemyKey = Object.keys(ENEMIES).find(k => speakerName.includes(ENEMIES[k].name));
+        if (enemyKey) return ENEMIES[enemyKey].image;
+
+        return null; // Unknown speaker (Narrator/System)
+    };
+
     if (!activeScript && mode !== 'menu') {
         return <div className="h-full flex items-center justify-center font-pixel text-white bg-black">Loading... (Script: {activeScript ? 'Yes' : 'No'}, Mode: {mode})</div>;
     }
 
     if (mode === 'menu') {
-        // ... (keep existing menu code)
         return (
-            <div className="h-full flex flex-col items-center justify-center space-y-8 p-6 bg-[url('/images/bg_home.png')] bg-cover">
+            <div className="h-full flex flex-col items-center justify-center space-y-8 p-6 bg-[url('/images/bg_home.png')] bg-cover bg-center">
                 <div className="bg-white/90 p-8 border-4 border-black shadow-pixel text-center space-y-4">
                     <h1 className="text-xl font-black text-amber-800">自由模式</h1>
                     <p className="text-xs text-gray-600">恭喜通關！盡情享受戰鬥吧。</p>
@@ -104,30 +117,35 @@ export default function Adventure({ onBack }) {
         const dialogueList = mode === 'intro' ? activeScript?.introDialogue : activeScript?.outroDialogue;
         const currentLine = dialogueList ? dialogueList[dialogueIndex] : null;
 
-        // Safety check
-        if (!currentLine) {
-            return (
-                <div className="flex flex-col items-center justify-center h-full bg-red-800 text-white p-4">
-                    <h2 className="text-xl font-bold mb-2">Error: Missing Dialogue</h2>
-                    <p>Mode: {mode}</p>
-                    <p>Index: {dialogueIndex}</p>
-                    <p>Total: {dialogueList?.length || 0}</p>
-                    <button onClick={() => setMode('battle')} className="mt-4 bg-white text-black px-4 py-2">Skip to Battle</button>
-                </div>
-            );
-        }
+        if (!currentLine) return <div>Error</div>;
+
+        const speakerImg = getSpeakerImage(currentLine.speaker);
 
         return (
             <div
                 className="h-full relative overflow-hidden flex flex-col bg-black font-pixel"
                 onClick={handleDialogueNext}
             >
-                {/* Background */}
-                <img src={activeScript.background} className="absolute inset-0 w-full h-full object-cover opacity-80" />
+                <img src={activeScript.background} className="absolute inset-0 w-full h-full object-cover opacity-60" />
+
+                {/* Speaker Image - Centered/Bottom */}
+                {speakerImg && (
+                    <div className="absolute bottom-32 left-1/2 -translate-x-1/2 z-10">
+                        <img
+                            src={speakerImg}
+                            className="w-48 h-48 object-contain pixel-art drop-shadow-[0_0_10px_rgba(255,255,255,0.5)] animate-bounce-hover"
+                        />
+                    </div>
+                )}
 
                 {/* Dialogue Box */}
                 <div className="absolute bottom-4 left-4 right-4 z-20">
-                    <div className="bg-white border-4 border-black p-6 shadow-pixel min-h-[160px] animate-bounce-in">
+                    <div className="bg-white border-4 border-black p-6 shadow-pixel min-h-[160px] animate-bounce-in relative">
+                        {/* Back Button during Story */}
+                        <button onClick={(e) => { e.stopPropagation(); onBack(); }} className="absolute -top-4 -right-2 bg-gray-200 text-xs px-2 py-1 border-2 border-black">
+                            Exit
+                        </button>
+
                         <div className="flex items-center justify-between mb-2">
                             <span className="font-black text-amber-800 text-sm bg-amber-100 px-3 py-1 border-2 border-black">
                                 {currentLine.speaker}
@@ -149,7 +167,8 @@ export default function Adventure({ onBack }) {
                 enemyConfig={activeScript.battle}
                 unlockedCharacters={unlockedCharacters}
                 onWin={() => setMode('outro')}
-                onLose={() => { alert("戰鬥失敗！請強化隊伍後再來。(其實重來就好)"); onBack(); }}
+                onLose={() => { alert("戰鬥失敗！"); onBack(); }}
+                onRun={onBack}
             />
         )
     }
@@ -166,24 +185,20 @@ export default function Adventure({ onBack }) {
         )
     }
 
-    return <div className="bg-red-500 text-white p-10">Error: Unknown Mode ({mode})</div>;
+    return null;
 }
 
 // === Battle Component ===
 
-function BattleScene({ enemyConfig, unlockedCharacters, onWin, onLose }) {
-    // Init Battle State
-    // Combatants: 'player-id', 'enemy'
+function BattleScene({ enemyConfig, unlockedCharacters, onWin, onLose, onRun }) {
     const [combatants, setCombatants] = useState({});
     const [turnOrder, setTurnOrder] = useState([]);
     const [currentTurnIdx, setCurrentTurnIdx] = useState(0);
     const [logs, setLogs] = useState([]);
-    const [animating, setAnimating] = useState(false); // Block input during animations
+    const [animating, setAnimating] = useState(false);
 
-    // Initial Setup
     useEffect(() => {
         const initialCombatants = {};
-
         // Add Player Team
         unlockedCharacters.forEach(id => {
             const char = CHARACTERS[id];
@@ -197,12 +212,11 @@ function BattleScene({ enemyConfig, unlockedCharacters, onWin, onLose }) {
                 spd: char.stats.spd,
                 image: char.image,
                 isEnemy: false,
-                status: 'idle' // idle, attack, hit, dead
+                status: 'idle'
             };
         });
 
         // Add Enemy
-        // Enemy stats from ENEMIES + Config overrides
         const enemyBase = ENEMIES[enemyConfig.enemyId];
         initialCombatants['enemy'] = {
             id: 'enemy',
@@ -210,8 +224,8 @@ function BattleScene({ enemyConfig, unlockedCharacters, onWin, onLose }) {
             hp: enemyConfig.hp || enemyBase.hp,
             maxHp: enemyConfig.hp || enemyBase.hp,
             atk: enemyBase.atk,
-            def: 10, // Default DEF for enemy
-            spd: 12, // Default SPD for enemy
+            def: 10,
+            spd: 12,
             image: enemyBase.image,
             isEnemy: true,
             status: 'idle'
@@ -219,139 +233,90 @@ function BattleScene({ enemyConfig, unlockedCharacters, onWin, onLose }) {
 
         setCombatants(initialCombatants);
 
-        // Sort Turn Order
         const order = Object.values(initialCombatants)
             .sort((a, b) => b.spd - a.spd)
             .map(c => c.id);
-
         setTurnOrder(order);
         addLog("戰鬥開始！");
     }, []);
 
     const addLog = (msg) => setLogs(prev => [msg, ...prev].slice(0, 3));
 
-    // Turn Loop Effect
+    // Turn Loop
     useEffect(() => {
         if (turnOrder.length === 0 || animating) return;
-
         const currentId = turnOrder[currentTurnIdx];
         const actor = combatants[currentId];
 
-        // Check if dead
-        if (actor.hp <= 0) {
+        if (!actor || actor.hp <= 0) {
             nextTurn();
             return;
         }
 
-        // Enemy AI
         if (actor.isEnemy) {
             setAnimating(true);
             setTimeout(() => {
-                // Determine target (Random alive player)
                 const candidates = Object.values(combatants).filter(c => !c.isEnemy && c.hp > 0);
-                if (candidates.length === 0) {
-                    onLose();
-                    return;
-                }
+                if (candidates.length === 0) { onLose(); return; }
                 const target = candidates[Math.floor(Math.random() * candidates.length)];
                 executeAttack(actor, target);
-            }, 1000); // Think time
+            }, 1000);
         }
-
     }, [currentTurnIdx, animating, combatants, turnOrder]);
 
     const nextTurn = () => {
-        // Check Win/Loss conditions
         const enemy = combatants['enemy'];
         const players = Object.values(combatants).filter(c => !c.isEnemy && c.hp > 0);
 
-        if (enemy.hp <= 0) {
-            setTimeout(onWin, 1000);
-            return;
-        }
-        if (players.length === 0) {
-            setTimeout(onLose, 1000);
-            return;
-        }
+        if (enemy.hp <= 0) { setTimeout(onWin, 1000); return; }
+        if (players.length === 0) { setTimeout(onLose, 1000); return; }
 
         setCurrentTurnIdx(prev => (prev + 1) % turnOrder.length);
         setAnimating(false);
     };
 
     const executeAttack = (attacker, target) => {
-        // 1. Animation Start (Translate)
-        setCombatants(prev => ({
-            ...prev,
-            [attacker.id]: { ...prev[attacker.id], status: 'attack' }
-        }));
-
+        setCombatants(prev => ({ ...prev, [attacker.id]: { ...prev[attacker.id], status: 'attack' } }));
         setTimeout(() => {
-            // 2. Calc Damage
-            // Formula: Math.max(1, Math.floor((Attacker.ATK - Target.DEF * 0.2) * (Math.random() * 0.2 + 0.9)))
-            const dmg = Math.max(1, Math.floor(
-                (attacker.atk - target.def * 0.2) * (Math.random() * 0.2 + 0.9)
-            ));
-
+            const dmg = Math.max(1, Math.floor((attacker.atk - target.def * 0.2) * (Math.random() * 0.2 + 0.9)));
             addLog(`${attacker.name} 攻擊了 ${target.name}，造成 ${dmg} 點傷害！`);
-
-            // 3. Apply Damage & Hit Anim
             setCombatants(prev => ({
                 ...prev,
-                [attacker.id]: { ...prev[attacker.id], status: 'idle' }, // Reset attacker
-                [target.id]: {
-                    ...prev[target.id],
-                    hp: Math.max(0, prev[target.id].hp - dmg),
-                    status: 'hit',
-                    popup: dmg
-                }
+                [attacker.id]: { ...prev[attacker.id], status: 'idle' },
+                [target.id]: { ...prev[target.id], hp: Math.max(0, prev[target.id].hp - dmg), status: 'hit', popup: dmg }
             }));
-
-            // 4. Cleanup
             setTimeout(() => {
-                setCombatants(prev => ({
-                    ...prev,
-                    [target.id]: { ...prev[target.id], status: 'idle', popup: null }
-                }));
+                setCombatants(prev => ({ ...prev, [target.id]: { ...prev[target.id], status: 'idle', popup: null } }));
                 nextTurn();
-            }, 800); // Hit duration
-
-        }, 500); // Attack dash duration
+            }, 800);
+        }, 500);
     };
 
-    const handlePlayerAction = (type) => { // type: 'attack' | 'heal'
+    const handlePlayerAction = (type) => {
         setAnimating(true);
         const attackerId = turnOrder[currentTurnIdx];
         const attacker = combatants[attackerId];
-        const target = combatants['enemy']; // Always single enemy for now
+        const target = combatants['enemy'];
 
-        if (type === 'attack') {
-            executeAttack(attacker, target);
-        } else {
-            // Heal logic (Simplified: Heal Self or All?)
-            // Spec: Daifuku has Heal
+        if (type === 'attack') executeAttack(attacker, target);
+        else {
+            // Heal
             const healAmount = 30;
-            addLog(`${attacker.name} 唱出了治癒之歌！全員恢復 ${healAmount} HP`);
-
+            addLog(`${attacker.name} 使用技能！全員恢復 ${healAmount} HP`);
             setCombatants(prev => {
-                const updated = { ...prev, [attacker.id]: { ...prev[attacker.id], status: 'attack' } };
-
-                // Heal everyone
+                const updated = { ...prev };
                 Object.keys(updated).forEach(key => {
                     if (!updated[key].isEnemy && updated[key].hp > 0) {
                         updated[key].hp = Math.min(updated[key].maxHp, updated[key].hp + healAmount);
-                        updated[key].popup = `+${healAmount}`; // Green? Handle via CSS
+                        updated[key].popup = `+${healAmount}`;
                     }
                 });
                 return updated;
             });
-
             setTimeout(() => {
-                setCombatants(prev => { // Clear Anims
+                setCombatants(prev => {
                     const clean = { ...prev };
-                    Object.keys(clean).forEach(key => {
-                        clean[key].status = 'idle';
-                        clean[key].popup = null;
-                    });
+                    Object.keys(clean).forEach(key => clean[key].popup = null);
                     return clean;
                 });
                 nextTurn();
@@ -363,93 +328,85 @@ function BattleScene({ enemyConfig, unlockedCharacters, onWin, onLose }) {
     const isPlayerTurn = !combatants[currentActorId]?.isEnemy && !animating;
 
     return (
-        <div className="h-full flex flex-col bg-[url('/images/bg_garden.png')] bg-cover relative">
-            {/* Battle Area */}
-            <div className="flex-1 relative mt-[20%]">
-                {/* Enemy */}
-                {combatants['enemy'] && (
-                    <div className="absolute top-10 left-1/2 -translate-x-1/2 flex flex-col items-center">
-                        <CharacterSprite char={combatants['enemy']} />
-                        <HealthBar current={combatants['enemy'].hp} max={combatants['enemy'].maxHp} />
-                    </div>
-                )}
+        <div className="h-full flex flex-col bg-[url('/images/bg_garden.png')] bg-cover relative overflow-hidden">
+            {/* Top Bar: Logs & Escape */}
+            <div className="bg-black/50 p-2 flex justify-between items-start z-20">
+                <div className="text-white text-[10px] font-mono leading-tight h-12 overflow-hidden w-2/3">
+                    {logs.map((L, i) => <div key={i}>{L}</div>)}
+                </div>
+                <button onClick={onRun} className="bg-red-500 text-white text-xs px-3 py-1 border-2 border-white rounded-none">
+                    逃跑 (Exit)
+                </button>
+            </div>
 
-                {/* Player Team */}
-                <div className="absolute bottom-32 w-full flex justify-center gap-4 px-4 flex-wrap">
+            {/* Battle Area (Horizontal) */}
+            <div className="flex-1 flex items-end justify-between px-8 pb-32 relative">
+
+                {/* Players (Left) */}
+                <div className="flex flex-col-reverse gap-4 items-center mb-8">
                     {Object.values(combatants).filter(c => !c.isEnemy).map(c => (
-                        <div key={c.id} className={clsx("flex flex-col items-center transition-all", c.hp <= 0 && "opacity-50 grayscale")}>
-                            <div className={c.id === currentActorId ? "mb-2 animate-bounce text-yellow-500 font-bold" : "opacity-0 mb-2"}>
-                                ▼
-                            </div>
+                        <div key={c.id} className={clsx("relative flex flex-col items-center transition-all", c.hp <= 0 && "opacity-50 grayscale")}>
+                            {c.id === currentActorId && <div className="absolute -top-6 text-yellow-400 animate-bounce">▼</div>}
                             <CharacterSprite char={c} isActor={c.id === currentActorId} />
                             <HealthBar current={c.hp} max={c.maxHp} compressed />
                         </div>
                     ))}
                 </div>
-            </div>
 
-            {/* UI Controls */}
-            <div className="bg-white/95 h-1/3 border-t-4 border-black shadow-2xl p-6 flex flex-col gap-4">
-                {/* Logs */}
-                <div className="h-16 overflow-hidden text-xs font-mono text-gray-500 space-y-1 border-b-2 border-dashed border-gray-400 pb-2">
-                    {logs.map((L, i) => <p key={i}>{L}</p>)}
-                </div>
-
-                {/* Actions */}
-                {isPlayerTurn ? (
-                    <div className="grid grid-cols-2 gap-4 h-full">
-                        <button
-                            onClick={() => handlePlayerAction('attack')}
-                            className="bg-red-500 hover:bg-red-600 text-white border-4 border-black shadow-pixel active:shadow-none active:translate-y-1 font-bold text-sm flex flex-col items-center justify-center gap-1 transition-none"
-                        >
-                            <Sword size={20} /> 攻擊
-                        </button>
-                        <button
-                            onClick={() => handlePlayerAction('heal')} // Just treating 2nd button as Skill for now
-                            className="bg-blue-500 hover:bg-blue-600 text-white border-4 border-black shadow-pixel active:shadow-none active:translate-y-1 font-bold text-sm flex flex-col items-center justify-center gap-1 transition-none"
-                        >
-                            <Zap size={20} /> 技能
-                        </button>
-                    </div>
-                ) : (
-                    <div className="flex items-center justify-center h-full text-gray-400 font-bold animate-pulse">
-                        {combatants[currentActorId]?.isEnemy ? "敵方回合..." : "等待中..."}
+                {/* Enemy (Right) */}
+                {combatants['enemy'] && (
+                    <div className="flex flex-col items-center mb-20 mr-4">
+                        <CharacterSprite char={combatants['enemy']} />
+                        <HealthBar current={combatants['enemy'].hp} max={combatants['enemy'].maxHp} />
                     </div>
                 )}
             </div>
+
+            {/* Controls (Bottom) */}
+            {isPlayerTurn && (
+                <div className="absolute bottom-0 w-full bg-white border-t-4 border-black p-4 grid grid-cols-2 gap-4 h-24 z-30 animate-slide-up">
+                    <button onClick={() => handlePlayerAction('attack')} className="bg-red-500 text-white border-4 border-black font-bold flex items-center justify-center gap-2 hover:bg-red-600 active:scale-95">
+                        <Sword /> 攻擊
+                    </button>
+                    <button onClick={() => handlePlayerAction('heal')} className="bg-blue-500 text-white border-4 border-black font-bold flex items-center justify-center gap-2 hover:bg-blue-600 active:scale-95">
+                        <Zap /> 技能
+                    </button>
+                    <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-yellow-400 px-4 py-1 border-2 border-black text-xs font-bold shadow-pixel">
+                        輪到 {combatants[currentActorId].name} 行動
+                    </div>
+                </div>
+            )}
+
+            {!isPlayerTurn && (
+                <div className="absolute bottom-0 w-full h-12 bg-black/80 flex items-center justify-center text-white font-pixel animate-pulse z-30">
+                    對手思考中...
+                </div>
+            )}
         </div>
     )
 }
 
+// ... (CharacterSprite and HealthBar remain slightly same, maybe adjust X translate for horizontal)
 function CharacterSprite({ char, isActor }) {
     const isAttack = char.status === 'attack';
     const isHit = char.status === 'hit';
+    // Adjust attack direction based on side
+    const moveX = char.isEnemy ? -50 : 50;
 
     return (
         <div className="relative">
             <motion.img
                 src={char.image}
-                className={clsx(
-                    "w-20 h-20 object-contain pixel-art",
-                    isActor && "scale-110 drop-shadow-md"
-                )}
+                className={clsx("w-24 h-24 object-contain pixel-art", isActor && "scale-110 drop-shadow-md")}
                 animate={{
-                    x: isHit ? [0, -5, 5, -5, 5, 0] : (isAttack ? (char.isEnemy ? -50 : 50) : 0),
-                    filter: isHit ? "brightness(2) sepia(1) hue-rotate(-50deg) saturate(5)" : "none" // Flash Red-ish
+                    x: isHit ? [0, -5, 5, -5, 5, 0] : (isAttack ? moveX : 0),
+                    filter: isHit ? "brightness(2) sepia(1) hue-rotate(-50deg) saturate(5)" : "none"
                 }}
                 transition={{ duration: 0.3 }}
             />
             <AnimatePresence>
                 {char.popup && (
-                    <motion.div
-                        initial={{ opacity: 1, y: 0 }}
-                        animate={{ opacity: 0, y: -30 }}
-                        exit={{ opacity: 0 }}
-                        className={clsx(
-                            "absolute -top-10 left-1/2 -translate-x-1/2 text-2xl font-black drop-shadow-md",
-                            char.popup.toString().includes('+') ? "text-green-500" : "text-red-500"
-                        )}
-                    >
+                    <motion.div initial={{ y: 0, opacity: 1 }} animate={{ y: -30, opacity: 0 }} className={clsx("absolute -top-10 left-1/2 -translate-x-1/2 text-2xl font-black drop-shadow-md", char.popup.toString().includes('+') ? "text-green-500" : "text-red-500")}>
                         {char.popup}
                     </motion.div>
                 )}
@@ -461,11 +418,8 @@ function CharacterSprite({ char, isActor }) {
 function HealthBar({ current, max, compressed }) {
     const pct = Math.max(0, Math.min(100, (current / max) * 100));
     return (
-        <div className={clsx("w-full bg-gray-200 border-2 border-black overflow-hidden mt-1", compressed ? "h-2 w-16" : "h-4 w-32")}>
-            <div
-                className={clsx("h-full transition-all duration-300", pct < 30 ? "bg-red-500" : "bg-green-500")}
-                style={{ width: `${pct}%` }}
-            />
+        <div className={clsx("bg-gray-700 border-2 border-black overflow-hidden mt-1", compressed ? "h-2 w-16" : "h-4 w-32")}>
+            <div className={clsx("h-full transition-all duration-300", pct < 30 ? "bg-red-500" : "bg-green-500")} style={{ width: `${pct}%` }} />
         </div>
     )
 }

@@ -202,34 +202,38 @@ function BattleScene({ enemyConfig, unlockedCharacters, onWin, onLose, onRun }) 
         // Add Player Team
         unlockedCharacters.forEach(id => {
             const char = CHARACTERS[id];
-            initialCombatants[id] = {
-                id,
-                name: char.name,
-                hp: char.stats.hp,
-                maxHp: char.stats.hp,
-                atk: char.stats.atk,
-                def: char.stats.def,
-                spd: char.stats.spd,
-                image: char.image,
-                isEnemy: false,
-                status: 'idle'
-            };
+            if (char) { // Safety check
+                initialCombatants[id] = {
+                    id,
+                    name: char.name,
+                    hp: char.stats.hp,
+                    maxHp: char.stats.hp,
+                    atk: char.stats.atk,
+                    def: char.stats.def,
+                    spd: char.stats.spd,
+                    image: char.image,
+                    isEnemy: false,
+                    status: 'idle'
+                };
+            }
         });
 
         // Add Enemy
         const enemyBase = ENEMIES[enemyConfig.enemyId];
-        initialCombatants['enemy'] = {
-            id: 'enemy',
-            name: enemyConfig.enemyName,
-            hp: enemyConfig.hp || enemyBase.hp,
-            maxHp: enemyConfig.hp || enemyBase.hp,
-            atk: enemyBase.atk,
-            def: 10,
-            spd: 12,
-            image: enemyBase.image,
-            isEnemy: true,
-            status: 'idle'
-        };
+        if (enemyBase) { // Safety check
+            initialCombatants['enemy'] = {
+                id: 'enemy',
+                name: enemyConfig.enemyName,
+                hp: enemyConfig.hp || enemyBase.hp,
+                maxHp: enemyConfig.hp || enemyBase.hp,
+                atk: enemyBase.atk,
+                def: 10,
+                spd: 12,
+                image: enemyBase.image,
+                isEnemy: true,
+                status: 'idle'
+            };
+        }
 
         setCombatants(initialCombatants);
 
@@ -241,6 +245,11 @@ function BattleScene({ enemyConfig, unlockedCharacters, onWin, onLose, onRun }) 
     }, []);
 
     const addLog = (msg) => setLogs(prev => [msg, ...prev].slice(0, 3));
+
+    // Safety Loading Check
+    if (turnOrder.length === 0 || !combatants[turnOrder[0]]) {
+        return <div className="h-full flex items-center justify-center text-white font-pixel animate-pulse">Loading Battle...</div>;
+    }
 
     // Turn Loop
     useEffect(() => {
@@ -268,7 +277,7 @@ function BattleScene({ enemyConfig, unlockedCharacters, onWin, onLose, onRun }) 
         const enemy = combatants['enemy'];
         const players = Object.values(combatants).filter(c => !c.isEnemy && c.hp > 0);
 
-        if (enemy.hp <= 0) { setTimeout(onWin, 1000); return; }
+        if (!enemy || enemy.hp <= 0) { setTimeout(onWin, 1000); return; }
         if (players.length === 0) { setTimeout(onLose, 1000); return; }
 
         setCurrentTurnIdx(prev => (prev + 1) % turnOrder.length);
@@ -325,7 +334,9 @@ function BattleScene({ enemyConfig, unlockedCharacters, onWin, onLose, onRun }) 
     };
 
     const currentActorId = turnOrder[currentTurnIdx];
-    const isPlayerTurn = !combatants[currentActorId]?.isEnemy && !animating;
+    const currentActor = combatants[currentActorId];
+    // Safety check for undefined currentActor
+    const isPlayerTurn = currentActor && !currentActor.isEnemy && !animating;
 
     return (
         <div className="h-full flex flex-col bg-[url('/images/bg_garden.png')] bg-cover relative overflow-hidden">
@@ -371,9 +382,12 @@ function BattleScene({ enemyConfig, unlockedCharacters, onWin, onLose, onRun }) 
                     <button onClick={() => handlePlayerAction('heal')} className="bg-blue-500 text-white border-4 border-black font-bold flex items-center justify-center gap-2 hover:bg-blue-600 active:scale-95">
                         <Zap /> 技能
                     </button>
-                    <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-yellow-400 px-4 py-1 border-2 border-black text-xs font-bold shadow-pixel">
-                        輪到 {combatants[currentActorId].name} 行動
-                    </div>
+                    {/* Safety check for name display */}
+                    {combatants[currentActorId] && (
+                        <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-yellow-400 px-4 py-1 border-2 border-black text-xs font-bold shadow-pixel">
+                            輪到 {combatants[currentActorId].name} 行動
+                        </div>
+                    )}
                 </div>
             )}
 

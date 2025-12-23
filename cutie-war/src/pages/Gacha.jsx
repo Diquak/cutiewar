@@ -38,7 +38,7 @@ export default function Gacha() {
             </div>
 
             <div className={`relative transition-all duration-500 ${isPulling ? 'scale-110 animate-pulse' : ''}`}>
-                <img src="/images/gacha_box.png" alt="Gacha Box" className="w-64 pixel-art filter drop-shadow-[4px_4px_0_rgba(0,0,0,1)]"
+                <img src="/images/gacha_box.PNG" alt="Gacha Box" className="w-64 pixel-art filter drop-shadow-[4px_4px_0_rgba(0,0,0,1)]"
                     onError={(e) => e.target.src = 'https://placehold.co/200x200?text=Box'}
                 />
                 {isPulling && <Sparkles className="absolute top-0 left-0 text-yellow-400 animate-spin w-full h-full opacity-50" />}

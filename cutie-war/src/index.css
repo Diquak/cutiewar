@@ -4,14 +4,19 @@
 @tailwind components;
 @tailwind utilities;
 
+/* 定義中文像素字體 */
 @font-face {
-    font-family: 'PixelFont';
-    src: url('/fonts/pixel.ttf') format('truetype');
+    font-family: 'PixelTw';
+    /* 取個新名字 */
+    src: url('/fonts/pixel_tw.ttf') format('truetype');
+    /* 指向新的中文型字體 */
+    font-display: swap;
 }
 
 @layer base {
     html {
-        font-family: 'PixelFont', 'Press Start 2P', system-ui, sans-serif;
+        /* 設定優先順序：中文像素字 -> 英文像素字 -> 系統字 */
+        font-family: 'PixelTw', 'Press Start 2P', system-ui, sans-serif;
     }
 }
 
@@ -22,7 +27,8 @@
 }
 
 body {
-    font-family: 'Press Start 2P', cursive;
+    /* 確保 Body 也套用這個字體 */
+    font-family: 'PixelTw', 'Press Start 2P', cursive;
     background-color: #fdf6e3;
     color: #000;
 }
@@ -34,17 +40,18 @@ body,
     width: 100%;
     margin: 0;
     padding: 0;
+    overflow: hidden;
+    /* 防止整個頁面兩層滾動 */
 }
 
-/* Scrollbar styling for retro feel */
-/* 確保所有元素的捲軸都套用復古樣式 */
+/* 復古捲軸樣式 */
 *::-webkit-scrollbar {
-    width: 12px;
+    width: 8px;
 }
 
 *::-webkit-scrollbar-track {
     background: #fdf6e3;
-    border-left: 4px solid #000;
+    border-left: 2px solid #000;
 }
 
 *::-webkit-scrollbar-thumb {
@@ -52,8 +59,24 @@ body,
     border: 2px solid #000;
 }
 
-/* 修正 Firefox 的捲軸樣式 */
-* {
-    scrollbar-width: thin;
-    scrollbar-color: #fbbf24 #fdf6e3;
+@layer components {
+
+    /* 立體像素按鈕 */
+    .btn-pixel {
+        @apply relative border-4 border-black bg-white transition-all duration-100;
+        /* 實心陰影：右下偏移 6px */
+        box-shadow: 6px 6px 0px 0px #000000;
+    }
+
+    /* 按下去的效果：陰影消失，按鈕位移 */
+    .btn-pixel:active {
+        transform: translate(6px, 6px);
+        box-shadow: 0px 0px 0px 0px #000000;
+    }
+
+    /* 卡片風格 */
+    .card-pixel {
+        @apply border-4 border-black bg-white;
+        box-shadow: 8px 8px 0px 0px rgba(0, 0, 0, 0.2);
+    }
 }

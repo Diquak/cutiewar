@@ -53,36 +53,42 @@ export default function Gacha({ onBack }) {
                     <span className="text-lg font-bold text-yellow-600">🪙 {coins}</span>
                 </div>
             </div>
-            {/* Content Area */}
-            <div className="flex-1 flex flex-col items-center justify-center space-y-6 p-4 overflow-y-auto">
-                <div className={`relative transition-all duration-500 ${isPulling ? 'scale-110 animate-pulse' : ''}`}>
-                    <img src="/images/gacha_box.PNG" alt="Gacha Box" className="w-48 pixel-art filter drop-shadow-[4px_4px_0_rgba(0,0,0,1)]"
-                        onError={(e) => e.target.src = 'https://placehold.co/200x200?text=Box'}
-                    />
-                    {isPulling && <Sparkles className="absolute top-0 left-0 text-yellow-400 animate-spin w-full h-full opacity-50" />}
-                </div>
 
-                {result && !isPulling && (
-                    <div className="bg-white p-4 border-4 border-black shadow-pixel-lg flex flex-col items-center">
-                        <h3 className="text-base font-bold mb-2 text-amber-600">✨ 今日的夥伴 ✨</h3>
-                        <img src={result.image} className="w-24 h-24 object-contain pixel-art mb-2" />
-                        <p className="text-lg font-black text-gray-800">{result.name}</p>
-                        <p className="text-xs text-gray-500 mt-1">{result.role}</p>
+            {/* Content Area - 可滾動 */}
+            <div className="flex-1 overflow-y-auto p-4">
+                <div className="flex flex-col items-center justify-start space-y-4 min-h-full">
+                    {/* 抽獎箱 */}
+                    <div className={`relative transition-all duration-500 shrink-0 ${isPulling ? 'scale-110 animate-pulse' : ''}`}>
+                        <img src="/images/gacha_box.PNG" alt="Gacha Box" className="w-40 pixel-art filter drop-shadow-[4px_4px_0_rgba(0,0,0,1)]"
+                            onError={(e) => e.target.src = 'https://placehold.co/200x200?text=Box'}
+                        />
+                        {isPulling && <Sparkles className="absolute top-0 left-0 text-yellow-400 animate-spin w-full h-full opacity-50" />}
                     </div>
-                )}
 
-                <button
-                    onClick={handlePull}
-                    disabled={isPulling}
-                    className="bg-purple-600 hover:bg-purple-700 text-white text-sm font-bold py-3 px-6 border-4 border-black shadow-pixel active:shadow-none active:translate-y-1 disabled:opacity-50 flex items-center gap-2 transition-none"
-                >
-                    <Gift size={18} />
-                    欣賞夥伴 ({COST} 🪙)
-                </button>
+                    {/* 結果顯示 */}
+                    {result && !isPulling && (
+                        <div className="bg-white p-4 border-4 border-black shadow-pixel-lg flex flex-col items-center shrink-0">
+                            <h3 className="text-base font-bold mb-2 text-amber-600">✨ 今日的夥伴 ✨</h3>
+                            <img src={result.image} className="w-20 h-20 object-contain pixel-art mb-2" />
+                            <p className="text-base font-black text-gray-800">{result.name}</p>
+                            <p className="text-xs text-gray-500 mt-1">{result.role}</p>
+                        </div>
+                    )}
 
-                <p className="text-[10px] text-gray-500 text-center max-w-xs leading-relaxed">
-                    * 隨機展示你已解鎖的夥伴，金幣請到冒險模式獲取！
-                </p>
+                    {/* 抽獎按鈕 */}
+                    <button
+                        onClick={handlePull}
+                        disabled={isPulling}
+                        className="shrink-0 bg-purple-600 hover:bg-purple-700 text-white text-sm font-bold py-3 px-6 border-4 border-black shadow-pixel active:shadow-none active:translate-y-1 disabled:opacity-50 flex items-center gap-2 transition-none"
+                    >
+                        <Gift size={18} />
+                        {isPulling ? "抽取中..." : `欣賞夥伴 (${COST} 🪙)`}
+                    </button>
+
+                    <p className="text-[10px] text-gray-500 text-center max-w-xs leading-relaxed shrink-0 pb-4">
+                        * 隨機展示你已解鎖的夥伴，金幣請到冒險模式獲取！
+                    </p>
+                </div>
             </div>
         </div>
     );

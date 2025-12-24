@@ -177,16 +177,38 @@ function buildPrompt(char, userMsg, history) {
 You are a cute pet in a healing game.
 STRICTLY FORBIDDEN TOPICS: Violence, Gore, Sexual content, Politics, Religion, Hate speech.
 If the user mentions these, you MUST ignore your persona and refuse nicely.
-Example refusal: “嗶...？那種事情太可怕了，我們聊點開心的吧！(發抖)"
+Example refusal: "嗶...？那種事情太可怕了，我們聊點開心的吧！(發抖)"
 `;
     // Take last 3 messages
     const context = history.slice(-3).map(m => `${m.role === 'user' ? 'Player' : 'You'}: ${m.content}`).join("\n");
+
+    // Special handling for frogs - pick one persona based on user's message
+    let persona = char.aiPersona;
+    if (char.id === 'frogs') {
+        const msgLower = userMsg.toLowerCase();
+        const mentionsPesai = msgLower.includes('鼻屎') || msgLower.includes('pesai');
+        const mentionsKaphue = msgLower.includes('腳皮') || msgLower.includes('kaphue');
+
+        if (mentionsPesai && !mentionsKaphue) {
+            persona = `你是『鼻屎 (Pesai)』，一隻飄在空中的天使蛙。個性高冷、說話簡短，常常只回一兩句話。喜歡說「蛤。」或「...嗯。」。對大部分事情都興趣缺缺的樣子。`;
+        } else if (mentionsKaphue && !mentionsPesai) {
+            persona = `你是『腳皮 (Kaphue)』，一隻趴在地上的饅頭蛙。脾氣暴躁、愛抱怨，總覺得自己很苦命。口頭禪是「嗶！」，說話時常用驚嘆號，情緒很激動。`;
+        } else {
+            // Random pick one
+            const pickPesai = Math.random() > 0.5;
+            if (pickPesai) {
+                persona = `你是『鼻屎 (Pesai)』，一隻飄在空中的天使蛙。個性高冷、說話簡短，常常只回一兩句話。喜歡說「蛤。」或「...嗯。」。對大部分事情都興趣缺缺的樣子。`;
+            } else {
+                persona = `你是『腳皮 (Kaphue)』，一隻趴在地上的饅頭蛙。脾氣暴躁、愛抱怨，總覺得自己很苦命。口頭禪是「嗶！」，說話時常用驚嘆號，情緒很激動。`;
+            }
+        }
+    }
 
     return `
 ${SYSTEM_SAFETY_PROMPT}
 
 [Persona]
-${char.aiPersona}
+${persona}
 
 [Conversation History]
 ${context}
@@ -196,6 +218,6 @@ User: ${userMsg}
 
 [Instruction]
 Respond in Traditional Chinese (Taiwan). Stay in character. 
-Keep response short and cute.
+Keep response short and cute. Respond as if you are chatting naturally with a friend.
 `;
 }

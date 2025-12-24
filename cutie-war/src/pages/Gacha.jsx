@@ -1,17 +1,29 @@
 import React, { useState } from 'react';
 import { useGameStore } from '../store/useGameStore';
 import { CHARACTERS } from '../data/characters';
-import { Gift, Sparkles } from 'lucide-react';
+import { Gift, Sparkles, ArrowLeft } from 'lucide-react';
 
-export default function Gacha() {
-    const { coins, addCoins, unlockCharacter, unlockedCharacters } = useGameStore();
+export default function Gacha({ onBack }) {
+    const { coins, addCoins, unlockedCharacters } = useGameStore();
     const [isPulling, setIsPulling] = useState(false);
     const [result, setResult] = useState(null);
-    const [isDupe, setIsDupe] = useState(false);
 
     const COST = 100;
 
+    // 抽卡池：只包含已解鎖的夥伴角色（不包含敵人）
+    const getGachaPool = () => {
+        // 只從 CHARACTERS 裡挑已解鎖的
+        return unlockedCharacters.filter(id => CHARACTERS[id]);
+    };
+
     const handlePull = () => {
+        const pool = getGachaPool();
+
+        if (pool.length === 0) {
+            alert("還沒有可抽的角色！先去冒險解鎖夥伴吧！");
+            return;
+        }
+
         if (coins < COST) {
             alert("金幣不足！(去冒險賺錢吧)");
             return;
@@ -22,55 +34,56 @@ export default function Gacha() {
         addCoins(-COST);
 
         setTimeout(() => {
-            const charIds = Object.keys(CHARACTERS);
-            const randomId = charIds[Math.floor(Math.random() * charIds.length)];
-            const wasDupe = unlockedCharacters.includes(randomId);
-
-            unlockCharacter(randomId);
+            // 從已解鎖的角色池中隨機抽取
+            const randomId = pool[Math.floor(Math.random() * pool.length)];
             setResult(CHARACTERS[randomId]);
-            setIsDupe(wasDupe);
             setIsPulling(false);
         }, 1500);
     };
 
     return (
-        <div className="p-6 pb-24 flex flex-col items-center justify-center min-h-[80vh] space-y-8">
-            <div className="bg-white p-4 border-4 border-black shadow-pixel">
-                <span className="text-xl font-bold text-yellow-600 flex items-center gap-2">
-                    🪙 {coins}
-                </span>
-            </div>
-
-            <div className={`relative transition-all duration-500 ${isPulling ? 'scale-110 animate-pulse' : ''}`}>
-                <img src="/images/gacha_box.PNG" alt="Gacha Box" className="w-64 pixel-art filter drop-shadow-[4px_4px_0_rgba(0,0,0,1)]"
-                    onError={(e) => e.target.src = 'https://placehold.co/200x200?text=Box'}
-                />
-                {isPulling && <Sparkles className="absolute top-0 left-0 text-yellow-400 animate-spin w-full h-full opacity-50" />}
-            </div>
-
-            {result && !isPulling && (
-                <div className="bg-white p-6 border-4 border-black shadow-pixel-lg flex flex-col items-center animate-bounce">
-                    <h3 className={`text-lg font-bold mb-2 ${isDupe ? 'text-green-600' : 'text-amber-600'}`}>
-                        {isDupe ? '重複！+100 🪙' : '獲得新夥伴！'}
-                    </h3>
-                    <img src={result.image} className="w-32 h-32 object-contain pixel-art mb-4" />
-                    <p className="text-xl font-black text-gray-800">{result.name}</p>
-                    {isDupe && <p className="text-xs text-gray-500 mt-1">已轉換為金幣</p>}
+        <div className="h-full flex flex-col">
+            {/* Header with Back Button */}
+            <div className="p-4 flex items-center gap-4 shrink-0">
+                <button onClick={onBack} className="p-2 border-2 border-black hover:bg-gray-100 active:translate-y-1">
+                    <ArrowLeft size={16} />
+                </button>
+                <h2 className="text-lg font-bold text-amber-800">抽卡</h2>
+                <div className="ml-auto bg-white px-4 py-2 border-4 border-black shadow-pixel">
+                    <span className="text-lg font-bold text-yellow-600">🪙 {coins}</span>
                 </div>
-            )}
+            </div>
+            {/* Content Area */}
+            <div className="flex-1 flex flex-col items-center justify-center space-y-6 p-4 overflow-y-auto">
+                <div className={`relative transition-all duration-500 ${isPulling ? 'scale-110 animate-pulse' : ''}`}>
+                    <img src="/images/gacha_box.PNG" alt="Gacha Box" className="w-48 pixel-art filter drop-shadow-[4px_4px_0_rgba(0,0,0,1)]"
+                        onError={(e) => e.target.src = 'https://placehold.co/200x200?text=Box'}
+                    />
+                    {isPulling && <Sparkles className="absolute top-0 left-0 text-yellow-400 animate-spin w-full h-full opacity-50" />}
+                </div>
 
-            <button
-                onClick={handlePull}
-                disabled={isPulling}
-                className="bg-purple-600 hover:bg-purple-700 text-white text-md font-bold py-4 px-8 border-4 border-black shadow-pixel active:shadow-none active:translate-y-1 active:translate-x-1 disabled:opacity-50 flex items-center gap-2 transition-none"
-            >
-                <Gift size={20} />
-                抽一次 ({COST} 🪙)
-            </button>
+                {result && !isPulling && (
+                    <div className="bg-white p-4 border-4 border-black shadow-pixel-lg flex flex-col items-center">
+                        <h3 className="text-base font-bold mb-2 text-amber-600">✨ 今日的夥伴 ✨</h3>
+                        <img src={result.image} className="w-24 h-24 object-contain pixel-art mb-2" />
+                        <p className="text-lg font-black text-gray-800">{result.name}</p>
+                        <p className="text-xs text-gray-500 mt-1">{result.role}</p>
+                    </div>
+                )}
 
-            <p className="text-[10px] text-gray-500 text-center max-w-xs leading-relaxed">
-                * 重複角色將轉換為安慰獎金幣 (+100)
-            </p>
+                <button
+                    onClick={handlePull}
+                    disabled={isPulling}
+                    className="bg-purple-600 hover:bg-purple-700 text-white text-sm font-bold py-3 px-6 border-4 border-black shadow-pixel active:shadow-none active:translate-y-1 disabled:opacity-50 flex items-center gap-2 transition-none"
+                >
+                    <Gift size={18} />
+                    欣賞夥伴 ({COST} 🪙)
+                </button>
+
+                <p className="text-[10px] text-gray-500 text-center max-w-xs leading-relaxed">
+                    * 隨機展示你已解鎖的夥伴，金幣請到冒險模式獲取！
+                </p>
+            </div>
         </div>
     );
 }

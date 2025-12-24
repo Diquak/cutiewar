@@ -3,7 +3,7 @@ import { useGameStore } from '../store/useGameStore';
 import { CHARACTERS } from '../data/characters';
 import { ArrowLeft, Send } from 'lucide-react';
 
-export default function Chat({ onChatRoomChange }) {
+export default function Chat({ onBack, onChatRoomChange }) {
     const { unlockedCharacters, chatHistory, saveChat } = useGameStore();
     const [selectedCharId, setSelectedCharId] = useState(null);
 
@@ -12,20 +12,26 @@ export default function Chat({ onChatRoomChange }) {
         onChatRoomChange?.(true); // 進入聊天室，隱藏導航列
     };
 
-    const handleBack = () => {
+    const handleBackFromRoom = () => {
         setSelectedCharId(null);
         onChatRoomChange?.(false); // 離開聊天室，顯示導航列
     };
 
     if (selectedCharId) {
-        return <ChatRoom charId={selectedCharId} onBack={handleBack} />;
+        return <ChatRoom charId={selectedCharId} onBack={handleBackFromRoom} />;
     }
 
     return (
         <div className="h-full flex flex-col overflow-hidden">
-            <div className="p-4 shrink-0">
-                <h2 className="text-lg font-bold text-amber-800 border-b-4 border-black inline-block pb-2">聊天室</h2>
-                <p className="text-xs text-gray-500 mt-2">選擇一位夥伴開始聊天吧！</p>
+            {/* Header */}
+            <div className="p-4 flex items-center gap-4 shrink-0">
+                <button onClick={onBack} className="p-2 border-2 border-black hover:bg-gray-100 active:translate-y-1">
+                    <ArrowLeft size={16} />
+                </button>
+                <div>
+                    <h2 className="text-lg font-bold text-amber-800">聊天室</h2>
+                    <p className="text-xs text-gray-500">選擇一位夥伴開始聊天吧！</p>
+                </div>
             </div>
 
             <div className="flex-1 overflow-y-auto p-4 pt-0 pb-24 space-y-3">

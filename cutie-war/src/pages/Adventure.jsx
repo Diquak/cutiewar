@@ -13,38 +13,45 @@ export default function Adventure({ onBack }) {
     const [mode, setMode] = useState(isGameCleared ? 'menu' : 'intro');
     const [activeScript, setActiveScript] = useState(null);
     const [dialogueIndex, setDialogueIndex] = useState(0);
+    const [hasLoadedScript, setHasLoadedScript] = useState(false);
 
-    // Initialize Script based on Chapter
+    // Effect 1: 載入劇本 - 只監聽 currentChapterId
+    // 不監聽 unlockedCharacters，這樣解鎖角色時不會重置劇情
     useEffect(() => {
-        // Safety: Ensure at least one character is unlocked
-        if (!unlockedCharacters || unlockedCharacters.length === 0) {
-            console.warn("Adventure: No characters found, unlocking Buibui");
-            unlockCharacter('buibui');
-        }
-
-        // Recover missing characters if in Chapter 3+
-        if (currentChapterId >= 3 && unlockedCharacters.length === 1) {
-            ['frogs', 'amao', 'atu', 'daifuku', 'mochi'].forEach(id => unlockCharacter(id));
-        }
-
-        if (!isGameCleared) {
+        if (!isGameCleared && !hasLoadedScript) {
             const script = FULL_STORY_SCRIPT.find(s => s.chapterId === currentChapterId);
             if (script) {
                 setActiveScript(script);
                 setMode('intro');
+                setHasLoadedScript(true);
             } else {
                 console.error("Adventure: Chapter not found! ID:", currentChapterId);
-                // Fallback: If chapter not found, start Ch1 or random battle to prevent black screen
                 const fallbackScript = FULL_STORY_SCRIPT[0];
                 if (fallbackScript) {
                     setActiveScript(fallbackScript);
                     setMode('intro');
+                    setHasLoadedScript(true);
                 } else {
                     setMode('menu');
                 }
             }
         }
-    }, [currentChapterId, isGameCleared, unlockedCharacters]);
+    }, [currentChapterId, isGameCleared, hasLoadedScript]);
+
+    // Effect 2: 角色防呆 - 確保隊伍有人
+    useEffect(() => {
+        if (!unlockedCharacters || unlockedCharacters.length === 0) {
+            console.warn("Adventure: No characters found, unlocking Buibui");
+            unlockCharacter('buibui');
+        }
+
+        // 第 3 章補齊隊友
+        if (currentChapterId >= 3) {
+            ['frogs', 'amao', 'atu', 'daifuku', 'mochi'].forEach(id => {
+                if (!unlockedCharacters.includes(id)) unlockCharacter(id);
+            });
+        }
+    }, [unlockedCharacters, currentChapterId]);
 
     // === Handlers ===
 

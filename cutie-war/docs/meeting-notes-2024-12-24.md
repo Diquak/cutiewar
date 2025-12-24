@@ -2,17 +2,71 @@
 
 **日期**: 2024-12-24  
 **專案**: Cutie War 萌寵大戰甜點怪  
-**參與者**: 開發者 + AI 助手
+**參與者**: 開發者 + AI 助手 (Antigravity)
 
 ---
 
 ## 📋 會議摘要
 
-本次會議主要處理遊戲的 Bug 修復、UI/UX 優化、以及劇情內容調整。
+本次會議分為兩個場次：
+1. **早場 (AI 助手)**: Desktop-first 布局重構、視覺優化、戰鬥系統修復
+2. **午場**: 遊戲邏輯修復、UI/UX 優化、劇情內容調整
 
 ---
 
-## ✅ 已完成項目
+## 🌅 早場：Desktop 布局與視覺優化 (AI 助手)
+
+### 0. 架構重構
+
+#### 0.1 Desktop-First 布局
+- **目標**: 將遊戲從 Mobile-first 改為 Desktop-first，固定 1440×1024 解析度
+- **修改檔案**: `App.jsx`, `Home.jsx`
+- **改動**:
+  - `App.jsx`: 外層容器改為 `max-w-[1440px] aspect-[1440/1024] max-h-[95vh]`，自動縮放適應螢幕
+  - `Home.jsx`: 完全重構為橫向兩欄布局（左角色展示、右標題按鈕）
+  - 各頁面加入 `pb-32` / `pb-24` 底部 padding，避免被 Navbar 遮擋
+
+#### 0.2 Neo-Brutalism 視覺風格
+- **修改檔案**: `index.css`, `Navbar.jsx`
+- **改動**:
+  - 新增 `.btn-pixel` 和 `.card-pixel` 樣式（粗邊框 + 明顯陰影）
+  - Navbar 重新設計為「浮島式」Neo-Brutalism 風格
+  - 移除 Navbar 縮放造成的視覺殘影
+
+#### 0.3 浮動粒子效果
+- **新增檔案**: `src/components/Particles.jsx`
+- **功能**: 首頁背景增加漂浮粒子動畫（使用 framer-motion）
+
+---
+
+### 0.4 自訂中文像素字體
+- **問題**: 自訂字體 `PixelTw` 無法正確載入
+- **修改檔案**: `index.css`, `tailwind.config.js`
+- **改動**:
+  - `@font-face` 加入多重路徑容錯 (`/fonts/pixel_tw.ttf`, `fonts/pixel_tw.ttf`)
+  - Tailwind `fontFamily` 改為正確名稱 `'PixelTw'`
+
+---
+
+### 0.5 戰鬥系統空隊伍修復
+- **問題**: 進入戰鬥時畫面卡住或白屏
+- **原因**: `BattleScene` 收到的 `unlockedCharacters` 陣列為空
+- **修改檔案**: `Adventure.jsx`
+- **改動**:
+  - `useEffect` 加入角色解鎖防呆（空隊伍時強制解鎖 `buibui`）
+  - 進入 `mode === 'battle'` 時，傳入保底隊伍 `['buibui']`
+  - `BattleScene` 入口加入 `enemyConfig` null 檢查
+
+```jsx
+// 雙重保險範例
+const battleSquad = (unlockedCharacters?.length > 0) 
+    ? unlockedCharacters 
+    : ['buibui'];
+```
+
+---
+
+## ✅ 午場：已完成項目
 
 ### 1. UI/UX 改進
 
@@ -141,11 +195,35 @@ Zustand 的 `persist` 會將狀態存到 localStorage。當程式碼的初始值
 | `src/pages/Chat.jsx` | UI 調整 |
 | `src/pages/Team.jsx` | UI 調整 |
 | `src/pages/About.jsx` | UI 調整 |
-| `src/App.jsx` | 導航邏輯調整 |
+| `src/App.jsx` | 導航邏輯調整、Desktop 布局 |
 | `src/store/useGameStore.js` | 初始值修改 |
 | `src/data/story.js` | 劇情內容更新 |
+| `src/components/Navbar.jsx` | Neo-Brutalism 風格重構 |
+| `src/components/Particles.jsx` | 新增浮動粒子效果 |
 | `index.html` | Favicon 修復 |
+| `index.css` | 字體設定、Neo-Brutalism 樣式 |
+| `tailwind.config.js` | 字體設定修正 |
 
 ---
 
-*會議紀錄結束*
+## 📝 待辦事項
+
+1. **製作自訂 Favicon**: 可使用肥肥頭像作為網站圖示
+2. **舊存檔問題**: 用戶需重置進度才能看到 frogs 初始解鎖效果
+
+---
+
+## 🔧 技術筆記
+
+### React 閉包陷阱
+在事件處理函式中存取的 state 值是該函式被定義時的快照。即使呼叫了 `setState()`，同一個 render cycle 內值不會更新。**解法**: 在關鍵路徑上直接傳入保底值。
+
+### localStorage 與初始值衝突
+Zustand 的 `persist` 會將狀態存到 localStorage。當程式碼的初始值改變時，localStorage 的舊資料優先級更高。解決方法是清除存檔或重置進度。
+
+### useEffect 依賴管理
+當一個 useEffect 有多個依賴時，任何依賴改變都會觸發。若不希望某些狀態改變時觸發，應拆分為多個 useEffect。
+
+---
+
+*會議紀錄結束 - 2024-12-24*

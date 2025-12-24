@@ -1,14 +1,27 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useGameStore } from '../store/useGameStore';
 import { CHARACTERS } from '../data/characters';
-import { Swords, Star } from 'lucide-react';
+import { Swords, Star, ChevronLeft, ChevronRight } from 'lucide-react';
 import Particles from '../components/Particles';
 
 export default function Home({ navigate }) {
     const { coins, unlockedCharacters, currentChapterId, isGameCleared } = useGameStore();
+    const [currentIndex, setCurrentIndex] = useState(0);
 
-    const leaderId = unlockedCharacters[0];
-    const leader = CHARACTERS[leaderId];
+    // 自動輪播
+    useEffect(() => {
+        if (unlockedCharacters.length <= 1) return;
+        const timer = setInterval(() => {
+            setCurrentIndex(prev => (prev + 1) % unlockedCharacters.length);
+        }, 3000);
+        return () => clearInterval(timer);
+    }, [unlockedCharacters.length]);
+
+    const currentCharId = unlockedCharacters[currentIndex] || unlockedCharacters[0];
+    const currentChar = CHARACTERS[currentCharId];
+
+    const goNext = () => setCurrentIndex(prev => (prev + 1) % unlockedCharacters.length);
+    const goPrev = () => setCurrentIndex(prev => (prev - 1 + unlockedCharacters.length) % unlockedCharacters.length);
 
     return (
         <div className="w-full h-full bg-[url('/images/bg_home.png')] bg-cover bg-center relative overflow-hidden flex items-center justify-center">
@@ -17,17 +30,53 @@ export default function Home({ navigate }) {
 
             <div className="grid grid-cols-2 w-full max-w-6xl gap-12 items-center px-12 relative z-10 -mt-20">
 
-                {/* Left Column: Character Showcase */}
+                {/* Left Column: Character Carousel */}
                 <div className="flex flex-col items-center justify-center">
-                    <div className="relative w-96 h-96 bg-white rounded-none shadow-pixel border-8 border-black flex items-center justify-center transform hover:scale-105 transition-transform duration-300">
+                    <div className="relative w-96 h-96 bg-white rounded-none shadow-pixel border-8 border-black flex items-center justify-center">
+                        {/* 左右切換按鈕 */}
+                        {unlockedCharacters.length > 1 && (
+                            <>
+                                <button
+                                    onClick={goPrev}
+                                    className="absolute left-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white p-2 border-2 border-black z-10"
+                                >
+                                    <ChevronLeft size={20} />
+                                </button>
+                                <button
+                                    onClick={goNext}
+                                    className="absolute right-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white p-2 border-2 border-black z-10"
+                                >
+                                    <ChevronRight size={20} />
+                                </button>
+                            </>
+                        )}
+
+                        {/* 角色圖片 */}
                         <img
-                            src={leader.image}
-                            alt={leader.name}
-                            className="w-72 h-72 object-contain pixel-art animate-bounce-hover"
+                            key={currentCharId}
+                            src={currentChar?.image}
+                            alt={currentChar?.name}
+                            className="w-64 h-64 object-contain pixel-art animate-bounce-hover"
                         />
-                        <div className="absolute -bottom-8 bg-amber-100 px-8 py-3 border-4 border-black shadow-pixel">
-                            <p className="text-xl font-bold text-amber-800 tracking-widest">{leader.name}</p>
+
+                        {/* 角色名稱與職業 */}
+                        <div className="absolute -bottom-10 bg-amber-100 px-6 py-2 border-4 border-black shadow-pixel text-center">
+                            <p className="text-lg font-bold text-amber-800">{currentChar?.name}</p>
+                            <p className="text-xs text-amber-600">{currentChar?.role}</p>
                         </div>
+
+                        {/* 輪播指示器 */}
+                        {unlockedCharacters.length > 1 && (
+                            <div className="absolute -bottom-20 flex gap-2">
+                                {unlockedCharacters.map((_, idx) => (
+                                    <button
+                                        key={idx}
+                                        onClick={() => setCurrentIndex(idx)}
+                                        className={`w-3 h-3 border-2 border-black transition-colors ${idx === currentIndex ? 'bg-amber-500' : 'bg-white'}`}
+                                    />
+                                ))}
+                            </div>
+                        )}
                     </div>
                 </div>
 

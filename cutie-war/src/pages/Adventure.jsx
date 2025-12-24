@@ -454,7 +454,7 @@ function CharacterSprite({ char, isActor, small }) {
     const isHit = char.status === 'hit';
     // Adjust attack direction based on side
     const moveX = char.isEnemy ? -50 : (small ? 30 : 50);
-    const sizeClass = small ? "w-20 h-20" : "w-32 h-32";
+    const sizeClass = small ? "w-24 h-24" : "w-40 h-40";
 
     return (
         <div className="relative">

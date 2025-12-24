@@ -1,16 +1,15 @@
 export const FULL_STORY_SCRIPT = [
     {
         chapterId: 1,
-        title: "第一章：甜點的逆襲",
-        background: "/images/bg_garden.png", // 確保你有這張圖，沒有的話換成 bg_home.png
+        title: "第一章：午睡危機",
+        background: "/images/bg_garden.png",
         introDialogue: [
-            { speaker: "系統", text: "這是一個甜點變成怪物，試圖統治世界的時代..." },
-            { speaker: "肥肥", text: "嚼嚼... 我的葵花子好像變少了？" },
-            { speaker: "系統", text: "突然，一隻巨大的布丁擋住了去路！" },
-            { speaker: "貪吃布丁怪", text: "噗喲噗喲！把你們的點心都交出來！" },
-            { speaker: "肥肥", text: "吱？！那是我的點心！絕對不能原諒！" }
+            { speaker: "肥肥 Buibui", text: "嚼嚼... 今天的葵花子特別香... ❤️" },
+            { speaker: "貪吃布丁怪", text: "ㄉㄨㄞ！(一口吞掉葵花子)" },
+            { speaker: "腳皮 Kaphue", text: "嗶——！！(痛死啦！誰踩在老子背上！)" },
+            { speaker: "鼻屎 Pesai", text: "蛤。(眼神示意：處理掉它)" },
+            { speaker: "肥肥 Buibui", text: "把我的點心還來！萌寵守衛隊，出擊！" }
         ],
-        // ★ 關鍵：這裡的 enemyId 必須對應 characters.js 裡的 key (pudding)
         battle: {
             enemyId: "pudding",
             enemyName: "貪吃布丁怪",
@@ -18,8 +17,8 @@ export const FULL_STORY_SCRIPT = [
         },
         outroDialogue: [
             { speaker: "貪吃布丁怪", text: "嗚嗚... 被吃掉了..." },
-            { speaker: "肥肥", text: "嚼嚼... 這個布丁雖然兇，但味道不錯。" },
-            { speaker: "系統", text: "戰鬥勝利！獲得了通往下一關的鑰匙。" }
+            { speaker: "腳皮 Kaphue", text: "嗶！終於安靜了，老子要繼續睡了。" },
+            { speaker: "肥肥 Buibui", text: "嚼嚼... 這個布丁雖然兇，但味道不錯。" }
         ]
     },
     {
@@ -40,7 +39,11 @@ export const FULL_STORY_SCRIPT = [
         },
         outroDialogue: [
             { speaker: "珍珠射手", text: "啵... 我的Q度... 消失了..." },
-            { speaker: "阿毛", text: "呼... 嚇死我了，還以為要變成果汁了。" }
+            { speaker: "阿毛 A-Mao", text: "呼... 嚇死我了，還以為要變成果汁了！" },
+            { speaker: "阿土 A-Tu", text: "...嗯？發生什麼事了...嘿嘿..." },
+            { speaker: "大福 Daifuku", text: "啾啾♪ 大家都沒事真是太好了～" },
+            { speaker: "麻糬 Mochi", text: "這...這些珍珠...可以囤起來嗎...？" },
+            { speaker: "肥肥 Buibui", text: "嚼嚼！夥伴變多了！向魔王城出發！" }
         ]
     },
     {

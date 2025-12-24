@@ -30,10 +30,10 @@ function App() {
                 {/* 內容區：佔滿剩餘空間 (扣除下方導覽列) */}
                 <main className="flex-1 w-full h-full relative overflow-hidden">
                     {page === 'home' && <Home navigate={setPage} />}
-                    {page === 'team' && <Team />}
-                    {page === 'gacha' && <Gacha />}
-                    {page === 'about' && <About />}
-                    {page === 'chat' && <Chat onChatRoomChange={setHideNavbar} />}
+                    {page === 'team' && <Team onBack={() => setPage('home')} />}
+                    {page === 'gacha' && <Gacha onBack={() => setPage('home')} />}
+                    {page === 'about' && <About onBack={() => setPage('home')} />}
+                    {page === 'chat' && <Chat onBack={() => setPage('home')} onChatRoomChange={setHideNavbar} />}
                     {page === 'adventure' && <Adventure onBack={() => setPage('home')} />}
                 </main>
 
